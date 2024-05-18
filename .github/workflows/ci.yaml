@@ -1,0 +1,77 @@
+name: CI
+
+on:
+    push:
+        branches: ['main']
+    pull_request:
+        types: [opened, synchronize, reopened]
+
+jobs:
+    lint:
+        name: 💄 Lint
+        runs-on: blacksmith-2vcpu-ubuntu-2204
+        steps:
+            - name: ⬇️ Checkout repo
+              uses: actions/checkout@v4
+
+            - name: ⎔ Setup node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+
+            - name: ⎔ Set up pnpm
+              uses: pnpm/action-setup@v3
+              with:
+                  version: 9.1.1
+
+            - name: 📥 Download deps
+              run: pnpm install
+
+            - name: 💄 Prettier Check
+              run: pnpm prettier:check
+
+            - name: 🔬 Lint Check
+              run: pnpm lint:check
+
+    test:
+        name: 🧪 Tests
+        runs-on: blacksmith-2vcpu-ubuntu-2204
+        needs: [lint]
+        steps:
+            - name: ⬇️ Checkout repo
+              uses: actions/checkout@v4
+
+            - name: ⎔ Setup node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+
+            - name: ⎔ Set up pnpm
+              uses: pnpm/action-setup@v3
+              with:
+                  version: 9.1.1
+
+            - name: 📥 Download deps
+              run: |
+                  pnpm install
+                  pnpm run build
+
+            - name: 🏄 Run the tests
+              run: pnpm test
+
+    deploy:
+        name: 🍿 Deploy
+        if: github.event_name == 'push' && ( github.ref_name == 'main' )
+        runs-on: blacksmith-2vcpu-ubuntu-2204
+        needs: [lint, test]
+        steps:
+            - name: ⬇️ Checkout repo
+              uses: actions/checkout@v4
+
+            - name: 🍔 Install Flyctl
+              uses: superfly/flyctl-actions/setup-flyctl@master
+
+            - name: 🚀 Push to Fly.io
+              env:
+                  FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+              run: flyctl deploy --remote-only --config fly-${{ github.ref_name }}.toml
