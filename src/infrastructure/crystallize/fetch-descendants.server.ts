@@ -34,7 +34,7 @@ const allowedComponentTypes = [
 export const fetchDescendants = async (
     folderIds: string[],
     language: string,
-    componentIds: string[],
+    componentIds: string[][],
     { browser }: Deps,
 ) => {
     const list = [];
@@ -53,12 +53,11 @@ export const fetchDescendants = async (
                 },
                 ...(componentIds.length > 0 &&
                     componentIds.reduce((memo: Record<string, unknown>, componentId) => {
-                        // const parts = componentId.split('.');
-                        //@todo: manage nested components here
-                        memo[componentId] = {
+                        const main = componentId[0];
+                        memo[main] = {
                             __aliasFor: 'component',
                             __args: {
-                                id: componentId,
+                                id: main,
                             },
                             componentId: true,
                             type: true,
@@ -77,6 +76,15 @@ export const fetchDescendants = async (
                                     {
                                         __typeName: 'ComponentChoiceComponentContent',
                                         selectedComponent: {
+                                            componentId: true,
+                                            content: {
+                                                __on: allowedComponentTypes,
+                                            },
+                                        },
+                                    },
+                                    {
+                                        __typeName: 'PieceComponentContent',
+                                        components: {
                                             componentId: true,
                                             content: {
                                                 __on: allowedComponentTypes,

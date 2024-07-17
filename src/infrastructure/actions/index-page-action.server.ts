@@ -19,7 +19,10 @@ export const indexPageAction = async (formData: FormData, { api, emitter }: Deps
             shape: formData.get('shape') || undefined,
             folders: formData.getAll('folders').filter(Boolean),
             topics: formData.getAll('topics').filter(Boolean),
-            components: formData.getAll('components').filter(Boolean),
+            components: formData
+                .getAll('components')
+                .filter(Boolean)
+                .map((c) => `${c}`.split('|<>|')),
         };
         return await executeForm(
             async (values) => {

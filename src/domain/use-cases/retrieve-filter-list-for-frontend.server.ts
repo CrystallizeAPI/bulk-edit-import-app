@@ -86,10 +86,10 @@ const reduceComponents = (
     },
 ) => {
     const memo: SelectOption[] = [];
-    const extendedAllowedComponentTypes = [...allowedComponentTypes, 'contentChunk', 'componentChoice']; //@todo: add Pieces
+    const extendedAllowedComponentTypes = [...allowedComponentTypes, 'contentChunk', 'componentChoice', 'piece'];
     components.forEach((component) => {
         if (!extendedAllowedComponentTypes.includes(component.type)) {
-            return memo;
+            return;
         }
         if (component.type === 'contentChunk') {
             // we don't manage repeatable chunk
@@ -117,12 +117,21 @@ const reduceComponents = (
             }
             return;
         }
-        //@todo: add Pieces: needs to update schema lib and import/export
-        // merging this: https://github.com/CrystallizeAPI/libraries/pull/235
 
+        if (component.type === 'piece') {
+            const config = component.config;
+            if (config && 'components' in config) {
+                const pieceComponents = reduceComponents(config.components ?? [], {
+                    identifier: component.id,
+                    name: component.name,
+                });
+                memo.push(...pieceComponents);
+            }
+            return;
+        }
         memo.push({
-            value: `${applyPrefix(component.id, '.', prefix?.identifier)}`,
-            label: `${applyPrefix(component.name, '.', prefix?.name)}`,
+            value: `${applyPrefix(component.id, '|<>|', prefix?.identifier)}`,
+            label: `${applyPrefix(component.name, ' > ', prefix?.name)}`,
         });
     });
     return memo;

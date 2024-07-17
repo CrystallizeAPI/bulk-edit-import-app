@@ -96,12 +96,14 @@ const ItemListForm = () => {
         return null;
     }
     const shape = 'shape' in actionData.values ? actionData.values.shape : undefined;
-    const selectedComponents = ('components' in actionData.values ? actionData.values.components : []) as string[];
+
+    const selectedComponents = ('components' in actionData.values ? actionData.values.components : []) as string[][];
     if (!shape) {
         return null;
     }
+
     const components = filterList.componentsMap[shape as keyof typeof filterList.componentsMap].filter((component) =>
-        selectedComponents.includes(component.value),
+        selectedComponents.map((c) => c.join('|<>|')).includes(component.value),
     );
 
     return (

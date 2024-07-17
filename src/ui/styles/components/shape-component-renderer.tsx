@@ -10,7 +10,11 @@ type ShapeComponentRendererProps = {
     itemId: string;
 };
 export const ShapeComponentRenderer = ({ component, itemId }: ShapeComponentRendererProps) => {
-    const getConfig = (component: Component) => {
+    const getConfig = (component?: Component) => {
+        if (!component) {
+            return null;
+        }
+
         if (component.type === 'richText') {
             return {
                 component: <RichTextView json={component.content.json} />,
