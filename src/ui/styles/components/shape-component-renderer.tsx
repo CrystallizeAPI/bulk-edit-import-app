@@ -4,13 +4,15 @@ import { NumericalView } from './shape-component-type/numerical';
 import { RichTextView } from './shape-component-type/rich-text';
 import { SingleLineView } from './shape-component-type/single-line';
 import { Component } from '~/domain/contracts/components';
+import { nestedComponentSeparator } from '~/domain/contracts/allowed-component-types';
 
 type ShapeComponentRendererProps = {
+    nestedPath?: string[];
     component: Component;
     itemId: string;
 };
-export const ShapeComponentRenderer = ({ component, itemId }: ShapeComponentRendererProps) => {
-    const getConfig = (component?: Component) => {
+export const ShapeComponentRenderer = ({ component, itemId, nestedPath }: ShapeComponentRendererProps) => {
+    const getConfig = (component?: Component, wNestedPath?: string[]) => {
         if (!component) {
             return null;
         }
@@ -27,7 +29,7 @@ export const ShapeComponentRenderer = ({ component, itemId }: ShapeComponentRend
                 editableValue: component.content.text,
             };
         }
-        if (component.type === 'numerical') {
+        if (component.type === 'numeric') {
             return {
                 component: <NumericalView number={component.content.number} />,
                 editableValue: component.content.number,
@@ -39,9 +41,37 @@ export const ShapeComponentRenderer = ({ component, itemId }: ShapeComponentRend
                 editableValue: component.content.value ? 1 : 0,
             };
         }
+
+        if (component.type === 'contentChunk') {
+            // we only manage the first chunk
+            const chunk = component.content.chunks[0];
+            // now we need to find the first component in the chunk that match the nested Path
+            if (!wNestedPath || wNestedPath.length === 0) {
+                return null;
+            }
+            const subComponent = chunk.find((c) => c.componentId === wNestedPath[0]);
+            return getConfig(subComponent, wNestedPath.slice(0, 1));
+        }
+
+        if (component.type === 'piece') {
+            if (!wNestedPath || wNestedPath.length === 0) {
+                return null;
+            }
+            const subComponent = component.content.components.find((c) => c.componentId === wNestedPath[0]);
+            return getConfig(subComponent, wNestedPath.slice(0, 1));
+        }
+
+        if (component.type === 'componentChoice') {
+            if (!wNestedPath || wNestedPath.length === 0 || !component.content?.selectedComponent) {
+                return null;
+            }
+            if (component.content.selectedComponent.componentId === wNestedPath[0]) {
+                return getConfig(component.content.selectedComponent, wNestedPath.slice(0, 1));
+            }
+        }
         return null;
     };
-    const config = getConfig(component);
+    const config = getConfig(component, nestedPath);
     const [value, setValue] = useState(config?.editableValue);
     const [hasBeenEdited, setHasBeenEdited] = useState(false);
 
@@ -49,9 +79,10 @@ export const ShapeComponentRenderer = ({ component, itemId }: ShapeComponentRend
         return null;
     }
 
+    const fullPath = [component.componentId, ...(nestedPath || [])].join(nestedComponentSeparator);
     return (
         <div className="editable block group">
-            {hasBeenEdited && <input type="hidden" value={value} name={`item[${itemId}][${component.componentId}]`} />}
+            {hasBeenEdited && <input type="hidden" value={value} name={`item[${itemId}][${fullPath}]`} />}
             <div className="group-hover:hidden">{hasBeenEdited ? value : config.component}</div>
             <div className="hidden group-hover:block">
                 <textarea

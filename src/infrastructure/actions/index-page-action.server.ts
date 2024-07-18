@@ -5,6 +5,7 @@ import { fetchItemsAndComponents } from '~/domain/use-cases/fetch-items-and-comp
 import { FetchItemsInputSchema } from '~/domain/contracts/input/fetch-items-input';
 import { z } from 'zod';
 import { saveItems } from '~/domain/use-cases/save-items.server';
+import { nestedComponentSeparator } from '~/domain/contracts/allowed-component-types';
 
 type Deps = {
     api: CrystallizeAPI;
@@ -22,7 +23,7 @@ export const indexPageAction = async (formData: FormData, { api, emitter }: Deps
             components: formData
                 .getAll('components')
                 .filter(Boolean)
-                .map((c) => `${c}`.split('|<>|')),
+                .map((c) => `${c}`.split(nestedComponentSeparator)),
         };
         return await executeForm(
             async (values) => {

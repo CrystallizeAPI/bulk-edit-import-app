@@ -2,7 +2,7 @@ type BaseComponent = {
     componentId: string;
 };
 
-export type Component =
+export type NonStructuaralComponent =
     | ({
           type: 'richText';
           content: {
@@ -19,7 +19,7 @@ export type Component =
           };
       } & BaseComponent)
     | ({
-          type: 'numerical';
+          type: 'numeric';
           content: {
               number: number;
           };
@@ -30,3 +30,25 @@ export type Component =
               value: boolean;
           };
       } & BaseComponent);
+
+export type StructuralComponent =
+    | ({
+          type: 'contentChunk';
+          content: {
+              chunks: Component[][];
+          };
+      } & BaseComponent)
+    | ({
+          type: 'piece';
+          content: {
+              components: Component[];
+          };
+      } & BaseComponent)
+    | ({
+          type: 'componentChoice';
+          content: {
+              selectedComponent: Component;
+          };
+      } & BaseComponent);
+
+export type Component = NonStructuaralComponent | StructuralComponent;

@@ -10,27 +10,6 @@ type InnerNode = {
     topics: { id: string }[];
 } & Record<string, Component>;
 
-const allowedComponentTypes = [
-    {
-        __typeName: 'SingleLineComponentContent',
-        text: true,
-    },
-    {
-        __typeName: 'RichTextComponentContent',
-        json: true,
-        plainText: true,
-        html: true,
-    },
-    {
-        __typeName: 'BooleanComponentContent',
-        value: true,
-    },
-    {
-        __typeName: 'NumericComponentContent',
-        number: true,
-    },
-];
-
 export const fetchDescendants = async (
     folderIds: string[],
     language: string,
@@ -59,40 +38,7 @@ export const fetchDescendants = async (
                             __args: {
                                 id: main,
                             },
-                            componentId: true,
-                            type: true,
-                            content: {
-                                __on: [
-                                    ...allowedComponentTypes,
-                                    {
-                                        __typeName: 'ContentChunkComponentContent',
-                                        chunks: {
-                                            componentId: true,
-                                            content: {
-                                                __on: allowedComponentTypes,
-                                            },
-                                        },
-                                    },
-                                    {
-                                        __typeName: 'ComponentChoiceComponentContent',
-                                        selectedComponent: {
-                                            componentId: true,
-                                            content: {
-                                                __on: allowedComponentTypes,
-                                            },
-                                        },
-                                    },
-                                    {
-                                        __typeName: 'PieceComponentContent',
-                                        components: {
-                                            componentId: true,
-                                            content: {
-                                                __on: allowedComponentTypes,
-                                            },
-                                        },
-                                    },
-                                ],
-                            },
+                            __all_on: ['Component'],
                         };
                         return memo;
                     }, {})),

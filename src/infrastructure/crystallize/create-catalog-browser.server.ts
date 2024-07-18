@@ -77,7 +77,7 @@ export const createCatalogBrowser = (apiClient: ClientInterface) => {
         let results: Results<T> | undefined;
         do {
             try {
-                const builtQuery = jsonToGraphQLQuery({ query });
+                const builtQuery = jsonToGraphQLQuery({ query }) + '\n' + fragments;
                 results = await apiClient.nextPimApi(builtQuery);
                 if (!results) {
                     return;
@@ -125,3 +125,242 @@ export const createCatalogBrowser = (apiClient: ClientInterface) => {
 };
 
 export type CatalogBrowser = Awaited<ReturnType<typeof createCatalogBrowser>>;
+
+const fragments = `#graphql
+
+fragment Component on Component {
+  ...BaseComponentDefinition
+  content {
+    ...BaseComponentContent
+
+    ... on ComponentChoiceComponentContent {
+      selectedComponent {
+        ...BaseComponentDefinition
+        content {
+          ...BaseComponentContent
+          ...LevelThreePieceContent
+        }
+      }
+    }
+
+    ... on ContentChunkComponentContent {
+      chunks {
+        ...BaseComponentDefinition
+        content {
+          ...BaseComponentContent
+          ...LevelThreePieceContent
+        }
+      }
+    }
+
+    ... on ComponentMultipleChoiceComponentContent {
+      selectedComponents {
+        ...BaseComponentDefinition
+        content {
+          ...BaseComponentContent
+          ...LevelThreePieceContent
+        }
+      }
+    }
+
+    ... on PieceComponentContent {
+      components {
+        ...BaseComponentDefinition
+        content {
+          ...BaseComponentContent
+          ...LevelThreePieceContent
+
+          ... on ComponentChoiceComponentContent {
+            selectedComponent {
+              ...BaseComponentDefinition
+              content {
+                ...BaseComponentContent
+                ...LevelTwoPieceContent
+              }
+            }
+          }
+
+          ... on ContentChunkComponentContent {
+            chunks {
+              ...BaseComponentDefinition
+              content {
+                ...BaseComponentContent
+                ...LevelTwoPieceContent
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+fragment BaseComponentContent on ComponentContent {
+  ...Boolean
+  ...SingleLine
+  ...RichTextComp
+  ...ParagraphCollection
+  ...ItemRelations
+  ...GridRelations
+  ...Location
+  ...PropertiesTable
+  ...DateTime
+  ...Numeric
+  ...Selection
+}
+
+fragment BaseComponentDefinition on Component {
+  componentId
+  type
+}
+
+fragment Boolean on BooleanComponentContent {
+  value
+}
+
+fragment SingleLine on SingleLineComponentContent {
+  text
+}
+
+fragment RichTextComp on RichTextComponentContent {
+  json
+  html
+  plainText
+}
+
+fragment RichText on RichTextContent {
+  json
+  html
+  plainText
+}
+
+fragment ParagraphCollection on ParagraphCollectionComponentContent {
+  paragraphs {
+    title {
+      ...SingleLine
+    }
+    body {
+      ...RichText
+    }
+  }
+}
+
+fragment PropertiesTable on PropertiesTableComponentContent {
+  sections {
+    ... on PropertiesTableComponentSection {
+      title
+      properties {
+        key
+        value
+      }
+    }
+  }
+}
+
+fragment ItemRelations on ItemRelationsComponentContent {
+  items {
+    id
+    name
+  }
+  productVariants {
+    sku
+    name
+  }
+}
+
+fragment GridRelations on GridRelationsComponentContent {
+  grids {
+    id
+    name
+  }
+}
+
+fragment Location on LocationComponentContent {
+  lat
+  long
+}
+
+fragment DateTime on DatetimeComponentContent {
+  datetime
+}
+
+
+fragment Numeric on NumericComponentContent {
+  number
+  unit
+}
+
+fragment Selection on SelectionComponentContent {
+  options {
+    key
+    value
+  }
+}
+
+fragment LevelOnePieceContent on PieceComponentContent {
+  components {
+    ...BaseComponentDefinition
+    content {
+      ...BaseComponentContent
+    }
+  }
+}
+
+fragment LevelTwoPieceContent on PieceComponentContent {
+  components {
+    ...BaseComponentDefinition
+    content {
+      ...BaseComponentContent
+      ...LevelOnePieceContent
+
+      ... on ComponentChoiceComponentContent {
+        selectedComponent {
+          ...BaseComponentDefinition
+          content {
+            ...BaseComponentContent
+          }
+        }
+      }
+
+      ... on ContentChunkComponentContent {
+        chunks {
+          ...BaseComponentDefinition
+          content {
+            ...BaseComponentContent
+          }
+        }
+      }
+    }
+  }
+}
+
+fragment LevelThreePieceContent on PieceComponentContent {
+  components {
+    ...BaseComponentDefinition
+    content {
+      ...BaseComponentContent
+      ...LevelTwoPieceContent
+
+      ... on ComponentChoiceComponentContent {
+        selectedComponent {
+          ...BaseComponentDefinition
+          content {
+            ...BaseComponentContent
+            ...LevelOnePieceContent
+          }
+        }
+      }
+
+      ... on ContentChunkComponentContent {
+        chunks {
+          ...BaseComponentDefinition
+          content {
+            ...BaseComponentContent
+            ...LevelOnePieceContent
+          }
+        }
+      }
+    }
+  }
+}
+`;

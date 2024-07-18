@@ -3,6 +3,7 @@ import { Form, useActionData, useLoaderData, useNavigation } from '@remix-run/re
 import { useEffect, useState } from 'react';
 import Select from 'react-select';
 import { useEventSource } from 'remix-utils/sse/react';
+import { nestedComponentSeparator } from '~/domain/contracts/allowed-component-types';
 import { retrieveFilterListForFrontend } from '~/domain/use-cases/retrieve-filter-list-for-frontend.server';
 import { indexPageAction } from '~/infrastructure/actions/index-page-action.server';
 import { buildServices } from '~/infrastructure/core/services.server';
@@ -103,7 +104,7 @@ const ItemListForm = () => {
     }
 
     const components = filterList.componentsMap[shape as keyof typeof filterList.componentsMap].filter((component) =>
-        selectedComponents.map((c) => c.join('|<>|')).includes(component.value),
+        selectedComponents.map((c) => c.join(nestedComponentSeparator)).includes(component.value),
     );
 
     return (
@@ -129,10 +130,15 @@ const ItemListForm = () => {
                                     <small>{item.tree.path}</small>
                                 </td>
                                 {components.map((component) => {
-                                    const itemComponent = item[component.value];
+                                    const componentIds = component.value.split(nestedComponentSeparator);
+                                    const itemComponent = item[componentIds[0]];
                                     return (
                                         <td key={item.id + component.value}>
-                                            <ShapeComponentRenderer component={itemComponent} itemId={item.id} />
+                                            <ShapeComponentRenderer
+                                                nestedPath={componentIds.slice(1)}
+                                                component={itemComponent}
+                                                itemId={item.id}
+                                            />
                                         </td>
                                     );
                                 })}

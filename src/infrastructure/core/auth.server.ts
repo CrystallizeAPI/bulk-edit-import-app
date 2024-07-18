@@ -1,4 +1,4 @@
-import { ClientInterface, CrystallizeSignature, createClient } from '@crystallize/js-api-client';
+import { ClientInterface, CreateClientOptions, CrystallizeSignature, createClient } from '@crystallize/js-api-client';
 import { createCookieSessionStorage, redirect } from '@remix-run/node';
 import crypto from 'crypto';
 import { decodeJwt, jwtVerify } from 'jose';
@@ -81,10 +81,30 @@ export const requirePimAwareApiClient = async (request: Request): Promise<Client
             sessionId: getCookieValue(request, 'connect.sid'),
         });
     }
-    return createClient({
-        tenantId: signatureChecked.tenantId,
-        tenantIdentifier: signatureChecked.tenantIdentifier,
-        accessTokenId: `${process.env.CRYSTALLIZE_ACCESS_TOKEN_ID}`,
-        accessTokenSecret: `${process.env.CRYSTALLIZE_ACCESS_TOKEN_SECRET}`,
-    });
+    const debugOptions: CreateClientOptions = {
+        profiling: {
+            // onRequest(query, variables) {
+            //     logger.debug("profiling", {
+            //         query,
+            //         variables,
+            //     });
+            // },
+            onRequestResolved: (timings, query, variables) => {
+                console.debug('profiling', {
+                    timings,
+                    query,
+                    variables,
+                });
+            },
+        },
+    };
+    return createClient(
+        {
+            tenantId: signatureChecked.tenantId,
+            tenantIdentifier: signatureChecked.tenantIdentifier,
+            accessTokenId: `${process.env.CRYSTALLIZE_ACCESS_TOKEN_ID}`,
+            accessTokenSecret: `${process.env.CRYSTALLIZE_ACCESS_TOKEN_SECRET}`,
+        },
+        debugOptions,
+    );
 };

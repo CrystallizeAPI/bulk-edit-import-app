@@ -1,6 +1,6 @@
 import { CrystallizeAPI } from '~/infrastructure/crystallize/create-crystallize-api.server';
 import { SelectOption } from '../contracts/select-option';
-import { allowedComponentTypes } from '../contracts/allowed-component-types';
+import { allowedComponentTypes, nestedComponentSeparator } from '../contracts/allowed-component-types';
 import { ShapeComponent } from '@crystallize/schema';
 
 type Deps = {
@@ -91,6 +91,9 @@ const reduceComponents = (
         if (!extendedAllowedComponentTypes.includes(component.type)) {
             return;
         }
+        const componentPathValue = `${applyPrefix(component.id, nestedComponentSeparator, prefix?.identifier)}`;
+        const componentPathLabel = `${applyPrefix(component.id, ' > ', prefix?.name)}`;
+
         if (component.type === 'contentChunk') {
             // we don't manage repeatable chunk
             const config = component.config;
@@ -99,8 +102,8 @@ const reduceComponents = (
             }
             if (config && 'components' in config) {
                 const chunkComponents = reduceComponents(config.components ?? [], {
-                    identifier: component.id,
-                    name: component.name,
+                    identifier: componentPathValue,
+                    name: componentPathLabel,
                 });
                 memo.push(...chunkComponents);
             }
@@ -110,8 +113,8 @@ const reduceComponents = (
             const config = component.config;
             if (config && 'choices' in config) {
                 const choicesComponents = reduceComponents(config.choices ?? [], {
-                    identifier: component.id,
-                    name: component.name,
+                    identifier: componentPathValue,
+                    name: componentPathLabel,
                 });
                 memo.push(...choicesComponents);
             }
@@ -122,16 +125,16 @@ const reduceComponents = (
             const config = component.config;
             if (config && 'components' in config) {
                 const pieceComponents = reduceComponents(config.components ?? [], {
-                    identifier: component.id,
-                    name: component.name,
+                    identifier: componentPathValue,
+                    name: componentPathLabel,
                 });
                 memo.push(...pieceComponents);
             }
             return;
         }
         memo.push({
-            value: `${applyPrefix(component.id, '|<>|', prefix?.identifier)}`,
-            label: `${applyPrefix(component.name, ' > ', prefix?.name)}`,
+            value: componentPathValue,
+            label: componentPathLabel,
         });
     });
     return memo;
