@@ -8,7 +8,7 @@ import { retrieveFilterListForFrontend } from '~/domain/use-cases/retrieve-filte
 import { indexPageAction } from '~/infrastructure/actions/index-page-action.server';
 import { buildServices } from '~/infrastructure/core/services.server';
 import { CrystallizeAPI } from '~/infrastructure/crystallize/create-crystallize-api.server';
-import { ShapeComponentRenderer } from '~/ui/styles/components/shape-component-renderer';
+import DataGrid from '~/ui/styles/components/data-grid/data-grid.client';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const api = await CrystallizeAPI(request);
@@ -109,55 +109,8 @@ const ItemListForm = () => {
 
     return (
         <div>
-            <h2>Items</h2>
             <Form method="post">
-                <table className="auto">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            {components.map((component) => (
-                                <th key={component.value}>{component.label}</th>
-                            ))}
-                            <th>Remove</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {items.map((item) => (
-                            <tr key={item.id} id={item.id}>
-                                <td>
-                                    {item.name}
-                                    <br />
-                                    <small>{item.tree.path}</small>
-                                </td>
-                                {components.map((component) => {
-                                    const componentIds = component.value.split(nestedComponentSeparator);
-                                    const itemComponent = item[componentIds[0]];
-                                    return (
-                                        <td key={item.id + component.value}>
-                                            <ShapeComponentRenderer
-                                                nestedPath={componentIds.slice(1)}
-                                                component={itemComponent}
-                                                itemId={item.id}
-                                            />
-                                        </td>
-                                    );
-                                })}
-                                <td className="text-center">
-                                    <button type="button">x</button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <td colSpan={components.length + 2} className="flex justify-center text-center">
-                                <button type="submit" name="_action" value="saveItems">
-                                    Save
-                                </button>
-                            </td>
-                        </tr>
-                    </tfoot>
-                </table>
+                <DataGrid items={items} components={components} />
             </Form>
         </div>
     );

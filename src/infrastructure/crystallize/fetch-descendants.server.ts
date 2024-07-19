@@ -5,7 +5,9 @@ type Deps = {
     browser: CatalogBrowser;
 };
 
-type InnerNode = {
+export type InnerNode = {
+    id: string;
+    name: string;
     shapeIdentifier: string;
     topics: { id: string }[];
 } & Record<string, Component>;
