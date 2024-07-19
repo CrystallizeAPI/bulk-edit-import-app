@@ -14,6 +14,7 @@
         "typecheck": "tsc"
     },
     "dependencies": {
+        "@crystallize/design-system": "^1.24.15",
         "@crystallize/import-export-sdk": "^1.0.3",
         "@crystallize/js-api-client": "^3.0.0",
         "@crystallize/reactjs-components": "^2.1.0",

@@ -1,4 +1,4 @@
-import { GridColumn, Item, GridCell, GridCellKind, TextCell } from '@glideapps/glide-data-grid';
+import { GridColumn, Item, GridCell, GridCellKind, TextCell, GridSelection } from '@glideapps/glide-data-grid';
 import { useCallback, useMemo, useState, useEffect, useRef } from 'react';
 import { Component } from '~/domain/contracts/components';
 
@@ -33,6 +33,7 @@ export const useDataGrid = ({ items, components }: UseDataGridProps) => {
     const itemsRef = useRef(items);
     const [changedColumns, setChangedColumns] = useState<Map<string, Item>>(new Map());
     const [colsWidthMap, setColsWidthMap] = useState<Map<string, number>>(new Map());
+    const [gridSelection, setGridSelection] = useState<GridSelection>();
 
     useEffect(() => {
         itemsRef.current = items;
@@ -63,7 +64,7 @@ export const useDataGrid = ({ items, components }: UseDataGridProps) => {
 
     const getCellContent = useCallback(
         ([col, row]: Item): GridCell => {
-            const item = items?.[row];
+            const item = itemsRef.current?.[row];
             const column = columns[col];
             const columnId = column.id;
 
@@ -112,7 +113,7 @@ export const useDataGrid = ({ items, components }: UseDataGridProps) => {
                 allowOverlay: true,
             };
         },
-        [columns, items],
+        [columns],
     );
 
     const onCellEdited = useCallback(
@@ -150,6 +151,21 @@ export const useDataGrid = ({ items, components }: UseDataGridProps) => {
         [changedColumns],
     );
 
+    // @ts-expect-error rows items is available but TS allows only access in class
+    const selectedRowsItem = gridSelection?.rows.items;
+
+    const onRemoveSelected = useCallback(() => {
+        const indexToRemove = selectedRowsItem.flatMap(([startIndex, endIndex]: [number, number]) =>
+            Array(endIndex - startIndex)
+                .fill(0)
+                .map((_, index) => startIndex + index),
+        );
+
+        itemsRef.current = itemsRef.current.filter((_, index) => !indexToRemove.includes(index));
+
+        setGridSelection(undefined);
+    }, [selectedRowsItem]);
+
     return {
         theme,
         columns,
@@ -157,5 +173,10 @@ export const useDataGrid = ({ items, components }: UseDataGridProps) => {
         onCellEdited,
         onColumnResize,
         highlightRegions,
+        gridSelection,
+        setGridSelection,
+        onRemoveSelected,
+        itemsLength: itemsRef.current.length,
+        isRemoveDisabled: !selectedRowsItem?.length,
     };
 };
