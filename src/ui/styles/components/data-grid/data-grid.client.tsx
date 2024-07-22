@@ -25,7 +25,6 @@ const DataGrid = ({ items, components }: DataEditorProps) => {
         onRemoveSelected,
         isRemoveDisabled,
         itemsLength,
-        rerenderKey,
     } = useDataGrid({
         items,
         components,

@@ -31,12 +31,13 @@ type UseDataGridProps = {
 
 export const useDataGrid = ({ items, components }: UseDataGridProps) => {
     const itemsRef = useRef(items);
-    const [changedColumns, setChangedColumns] = useState<Map<string, Item>>(new Map());
+    const [changedColumns, setChangedColumns] = useState<Map<string, Item[0][]>>(new Map());
     const [colsWidthMap, setColsWidthMap] = useState<Map<string, number>>(new Map());
     const [gridSelection, setGridSelection] = useState<GridSelection>();
 
     useEffect(() => {
         itemsRef.current = items;
+        setChangedColumns(new Map());
     }, [items]);
 
     const onColumnResize = useCallback((col: { id?: string }, newSize: number) => {
@@ -117,11 +118,11 @@ export const useDataGrid = ({ items, components }: UseDataGridProps) => {
     );
 
     const onCellEdited = useCallback(
-        (item: Item, val: GridCell) => {
-            const [col, row] = item;
+        ([col, row]: Item, val: GridCell) => {
             const column = columns[col];
             const componentId = column.id?.split('component-')[1] ?? '';
             const component = itemsRef.current?.[row][componentId];
+            const itemId = itemsRef.current?.[row].id;
 
             if (!component) {
                 return;
@@ -129,25 +130,25 @@ export const useDataGrid = ({ items, components }: UseDataGridProps) => {
 
             if (component.type === 'singleLine') {
                 component.content = { text: (val as TextCell).data };
-                setChangedColumns((prev) => new Map(prev.set(item.join('-'), item)));
             }
 
             if (component.type === 'richText') {
                 component.content = { json: [], html: [], plainText: [(val as TextCell).data] };
-                setChangedColumns((prev) => new Map(prev.set(item.join('-'), item)));
             }
+
+            setChangedColumns((prev) => new Map(prev.set(itemId, [...(prev.get(itemId) ?? []), col])));
         },
         [columns],
     );
 
     const highlightRegions = useMemo(
         () =>
-            [...changedColumns.values()].map(([col, row]) => {
-                return {
-                    color: '#ffde9933',
-                    range: { x: col, y: row, width: 1, height: 1 },
-                };
-            }),
+            [...changedColumns.keys()].flatMap((itemId) =>
+                [...(changedColumns.get(itemId) ?? [])].map((col) => {
+                    const row = itemsRef.current.findIndex((item) => item.id === itemId);
+                    return { color: '#ffde9933', range: { x: col, y: row, width: 1, height: 1 } };
+                }),
+            ),
         [changedColumns],
     );
 
@@ -155,16 +156,24 @@ export const useDataGrid = ({ items, components }: UseDataGridProps) => {
     const selectedRowsItem = gridSelection?.rows.items;
 
     const onRemoveSelected = useCallback(() => {
-        const indexToRemove = selectedRowsItem.flatMap(([startIndex, endIndex]: [number, number]) =>
+        const removedIds = selectedRowsItem.flatMap(([startIndex, endIndex]: [number, number]) =>
             Array(endIndex - startIndex)
                 .fill(0)
-                .map((_, index) => startIndex + index),
-        );
+                .map((_, index) => itemsRef.current[startIndex + index].id),
+        ) as string[];
 
-        itemsRef.current = itemsRef.current.filter((_, index) => !indexToRemove.includes(index));
+        itemsRef.current = itemsRef.current.filter((item) => !removedIds.includes(item.id));
+
+        setChangedColumns((prev) => {
+            const copy = new Map(prev);
+            removedIds.forEach((itemId) => copy.delete(itemId));
+            return copy;
+        });
 
         setGridSelection(undefined);
     }, [selectedRowsItem]);
+
+    console.log(highlightRegions);
 
     return {
         theme,
