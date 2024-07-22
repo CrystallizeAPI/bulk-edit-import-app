@@ -8,10 +8,10 @@ import {
     BooleanCell,
 } from '@glideapps/glide-data-grid';
 import { useCallback, useMemo, useState, useEffect, useRef } from 'react';
-import { Component } from '~/domain/contracts/components';
+import { nestedComponentSeparator } from '~/domain/contracts/allowed-component-types';
 
 import { SelectOption } from '~/domain/contracts/select-option';
-import { InnerNode } from '~/infrastructure/crystallize/fetch-descendants.server';
+import { Item as ListItem } from '~/domain/use-cases/fetch-items-and-components.server';
 
 const theme = {
     baseFontStyle: '0.8125rem',
@@ -33,12 +33,12 @@ const theme = {
 };
 
 type UseDataGridProps = {
-    items: InnerNode[];
+    items: ListItem[];
     components: SelectOption[];
 };
 
 export const useDataGrid = ({ items, components }: UseDataGridProps) => {
-    const itemsRef = useRef<InnerNode[]>([]);
+    const itemsRef = useRef<ListItem[]>([]);
     const [changedColumns, setChangedColumns] = useState<Map<string, Set<number>>>(new Map());
     const [colsWidthMap, setColsWidthMap] = useState<Map<string, number>>(new Map());
     const [gridSelection, setGridSelection] = useState<GridSelection>();
@@ -90,11 +90,22 @@ export const useDataGrid = ({ items, components }: UseDataGridProps) => {
                 };
             }
 
-            const componentId = columnId.split('component-')[1];
-            const component = item[componentId] as Component | null;
+            const componentPath = columnId.split('component-')[1].split(nestedComponentSeparator);
+            const component = item.components.find(
+                (c) => JSON.stringify(c.componentPath) === JSON.stringify(componentPath),
+            );
 
-            if (component?.type === 'singleLine') {
-                const data = component.content.text ?? '';
+            if (!component) {
+                return {
+                    kind: GridCellKind.Text,
+                    data: '',
+                    displayData: '',
+                    allowOverlay: true,
+                };
+            }
+
+            if (component.type === 'singleLine') {
+                const data = 'text' in component.content ? component.content.text : '';
                 return {
                     kind: GridCellKind.Text,
                     data,
@@ -103,8 +114,18 @@ export const useDataGrid = ({ items, components }: UseDataGridProps) => {
                 };
             }
 
-            if (component?.type === 'richText') {
-                const text = component.content.plainText;
+            if (component.type === 'numeric') {
+                const data = 'number' in component.content ? `${component.content.number}` : '';
+                return {
+                    kind: GridCellKind.Text,
+                    data,
+                    displayData: data,
+                    allowOverlay: true,
+                };
+            }
+
+            if (component.type === 'richText') {
+                const text = 'plainText' in component.content ? `${component.content.plainText}` : '';
                 const data = (Array.isArray(text) ? text.join('/n') : text) ?? '';
                 return {
                     kind: GridCellKind.Text,
@@ -116,7 +137,7 @@ export const useDataGrid = ({ items, components }: UseDataGridProps) => {
             }
 
             if (component?.type === 'boolean') {
-                const isChecked = component.content.value;
+                const isChecked = 'value' in component.content ? component.content.value : false;
                 return {
                     kind: GridCellKind.Boolean,
                     data: isChecked,
@@ -137,24 +158,28 @@ export const useDataGrid = ({ items, components }: UseDataGridProps) => {
     const onCellEdited = useCallback(
         ([col, row]: Item, val: GridCell) => {
             const column = columns[col];
-            const componentId = column.id?.split('component-')[1] ?? '';
-            const component = itemsRef.current?.[row][componentId];
+            const componentPath = column.id?.split('component-')[1].split(nestedComponentSeparator);
+            const component = itemsRef.current?.[row]['components'].find(
+                (c) => JSON.stringify(c.componentPath) === JSON.stringify(componentPath),
+            );
             const itemId = itemsRef.current?.[row].id;
-
             if (!component) {
                 return;
             }
 
-            if (component.type === 'singleLine') {
+            if (component.type === 'singleLine' && 'text' in component.content) {
                 component.content.text = (val as TextCell).data;
-            } else if (component.type === 'richText') {
+            } else if (component.type === 'richText' && 'plainText' in component.content) {
                 component.content.plainText = [(val as TextCell).data];
-            } else if (component.type === 'boolean') {
+            } else if (component.type === 'boolean' && 'value' in component.content) {
                 component.content.value = !!(val as BooleanCell).data;
             }
 
             // Check if value is different than initial
-            const initialComponent = items[row][componentId];
+            const initialComponent = items[row]['components'].find(
+                (c) => JSON.stringify(c.componentPath) === JSON.stringify(componentPath),
+            );
+
             if (JSON.stringify(component) !== JSON.stringify(initialComponent)) {
                 setChangedColumns((prev) => new Map(prev.set(itemId, (prev.get(itemId) ?? new Set()).add(col))));
             } else {

@@ -1,14 +1,14 @@
 import { DataEditor } from '@glideapps/glide-data-grid';
 import { useDataGrid } from './use-data-grid';
-import { InnerNode } from '~/infrastructure/crystallize/fetch-descendants.server';
 import { SelectOption } from '~/domain/contracts/select-option';
 import { Button } from '@crystallize/design-system';
 
 import '@glideapps/glide-data-grid/dist/index.css';
 import '@crystallize/design-system/styles.css';
+import { Item } from '~/domain/use-cases/fetch-items-and-components.server';
 
 type DataEditorProps = {
-    items: InnerNode[];
+    items: Item[];
     components: SelectOption[];
 };
 

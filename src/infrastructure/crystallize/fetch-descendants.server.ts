@@ -1,5 +1,6 @@
 import { Component } from '~/domain/contracts/components';
 import { CatalogBrowser } from './create-catalog-browser.server';
+import { normalizeForGraphQL } from '~/domain/core/sanitize';
 
 type Deps = {
     browser: CatalogBrowser;
@@ -10,7 +11,8 @@ export type InnerNode = {
     name: string;
     shapeIdentifier: string;
     topics: { id: string }[];
-} & Record<string, Component>;
+    components: Component[];
+};
 
 export const fetchDescendants = async (
     folderIds: string[],
@@ -35,7 +37,8 @@ export const fetchDescendants = async (
                 ...(componentIds.length > 0 &&
                     componentIds.reduce((memo: Record<string, unknown>, componentId) => {
                         const main = componentId[0];
-                        memo[main] = {
+                        const alias = normalizeForGraphQL(`__component__` + main);
+                        memo[alias] = {
                             __aliasFor: 'component',
                             __args: {
                                 id: main,
@@ -49,7 +52,23 @@ export const fetchDescendants = async (
             if (node.type === 'folder') {
                 browsedFolders.push(node.id);
             }
-            list.push(node);
+
+            const reducedNode = Object.keys(node).reduce(
+                (memo: InnerNode, key) => {
+                    if (key.startsWith('__component__')) {
+                        memo.components.push(node[key as keyof InnerNode] as unknown as Component);
+                    }
+                    return memo;
+                },
+                {
+                    id: node.id,
+                    name: node.name,
+                    shapeIdentifier: node.shapeIdentifier,
+                    topics: node.topics || [],
+                    components: [],
+                },
+            );
+            list.push(reducedNode);
         }
     }
     return list;
