@@ -108,11 +108,9 @@ const ItemListForm = () => {
     );
 
     return (
-        <div>
-            <Form method="post">
-                <DataGrid items={items} components={components} />
-            </Form>
-        </div>
+        <Form method="post">
+            <DataGrid items={items} components={components} />
+        </Form>
     );
 };
 

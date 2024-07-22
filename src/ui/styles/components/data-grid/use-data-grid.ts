@@ -1,4 +1,12 @@
-import { GridColumn, Item, GridCell, GridCellKind, TextCell, GridSelection } from '@glideapps/glide-data-grid';
+import {
+    GridColumn,
+    Item,
+    GridCell,
+    GridCellKind,
+    TextCell,
+    GridSelection,
+    BooleanCell,
+} from '@glideapps/glide-data-grid';
 import { useCallback, useMemo, useState, useEffect, useRef } from 'react';
 import { Component } from '~/domain/contracts/components';
 
@@ -30,13 +38,13 @@ type UseDataGridProps = {
 };
 
 export const useDataGrid = ({ items, components }: UseDataGridProps) => {
-    const itemsRef = useRef(items);
-    const [changedColumns, setChangedColumns] = useState<Map<string, Item[0][]>>(new Map());
+    const itemsRef = useRef<InnerNode[]>([]);
+    const [changedColumns, setChangedColumns] = useState<Map<string, Set<number>>>(new Map());
     const [colsWidthMap, setColsWidthMap] = useState<Map<string, number>>(new Map());
     const [gridSelection, setGridSelection] = useState<GridSelection>();
 
     useEffect(() => {
-        itemsRef.current = items;
+        itemsRef.current = structuredClone(items);
         setChangedColumns(new Map());
     }, [items]);
 
@@ -107,6 +115,15 @@ export const useDataGrid = ({ items, components }: UseDataGridProps) => {
                 };
             }
 
+            if (component?.type === 'boolean') {
+                const isChecked = component.content.value;
+                return {
+                    kind: GridCellKind.Boolean,
+                    data: isChecked,
+                    allowOverlay: false,
+                };
+            }
+
             return {
                 kind: GridCellKind.Text,
                 data: '',
@@ -129,22 +146,35 @@ export const useDataGrid = ({ items, components }: UseDataGridProps) => {
             }
 
             if (component.type === 'singleLine') {
-                component.content = { text: (val as TextCell).data };
+                component.content.text = (val as TextCell).data;
+            } else if (component.type === 'richText') {
+                component.content.plainText = [(val as TextCell).data];
+            } else if (component.type === 'boolean') {
+                component.content.value = !!(val as BooleanCell).data;
             }
 
-            if (component.type === 'richText') {
-                component.content = { json: [], html: [], plainText: [(val as TextCell).data] };
+            // Check if value is different than initial
+            const initialComponent = items[row][componentId];
+            if (JSON.stringify(component) !== JSON.stringify(initialComponent)) {
+                setChangedColumns((prev) => new Map(prev.set(itemId, (prev.get(itemId) ?? new Set()).add(col))));
+            } else {
+                setChangedColumns((prev) => {
+                    const nextCols = prev.get(itemId);
+                    if (!nextCols) {
+                        return prev;
+                    }
+                    nextCols.delete(col);
+                    return new Map(prev.set(itemId, nextCols));
+                });
             }
-
-            setChangedColumns((prev) => new Map(prev.set(itemId, [...(prev.get(itemId) ?? []), col])));
         },
-        [columns],
+        [columns, items],
     );
 
     const highlightRegions = useMemo(
         () =>
             [...changedColumns.keys()].flatMap((itemId) =>
-                [...(changedColumns.get(itemId) ?? [])].map((col) => {
+                [...(changedColumns.get(itemId)?.values() ?? [])].map((col) => {
                     const row = itemsRef.current.findIndex((item) => item.id === itemId);
                     return { color: '#ffde9933', range: { x: col, y: row, width: 1, height: 1 } };
                 }),
@@ -172,8 +202,6 @@ export const useDataGrid = ({ items, components }: UseDataGridProps) => {
 
         setGridSelection(undefined);
     }, [selectedRowsItem]);
-
-    console.log(highlightRegions);
 
     return {
         theme,
