@@ -40,7 +40,7 @@ export default function Index() {
                 {({ isRemoveDisabled, onRemoveSelected, hasChanges, getChangedComponents }) => {
                     const actions = [
                         { key: 'import', name: 'Import', onSelect: () => {} },
-                        { key: 'export', name: 'Export', onSelect: () => {} },
+                        { key: 'export', name: 'Export', disabled: hasChanges, onSelect: () => {} },
                         { ...removeAction, disabled: isRemoveDisabled, onSelect: onRemoveSelected },
                     ];
 
