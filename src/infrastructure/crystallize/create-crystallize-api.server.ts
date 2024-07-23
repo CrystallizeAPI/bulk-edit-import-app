@@ -16,7 +16,7 @@ export const CrystallizeAPI = async (request: Request) => {
         fetchFolders: (language: string) => fetchFolders(language, { apiClient }),
         fetchTopics: (language: string) => fetchTopics(language, { apiClient }),
         fetchLanguages: () => fetchLanguages({ apiClient }),
-        fetchDescendants: async (folderIds: string[], language: string, components: string[][]) =>
+        fetchDescendants: async (folderIds: string[], language: string, components: string[]) =>
             fetchDescendants(folderIds, language, components, { browser: catalogueBrowser }),
     };
 };

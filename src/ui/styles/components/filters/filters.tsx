@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Select from 'react-select';
 import { Button } from '@crystallize/design-system';
-import { Form, useNavigation } from '@remix-run/react';
+import { useNavigation } from '@remix-run/react';
 import { ActionData, LoaderData } from '../../types';
 
 type FiltersFormProps = {

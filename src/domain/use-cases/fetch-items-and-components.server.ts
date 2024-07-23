@@ -116,11 +116,8 @@ const getEmptyFromShape = (
  * So we are going to fetch the children as a tree and then filter manually on topics and shapes...
  */
 
-type WithComponentPathNonStructuaralComponent = Omit<NonStructuaralComponent, 'componentId'> & {
-    componentPath: string[];
-};
 export type Item = Omit<InnerNode, 'components'> & {
-    components: WithComponentPathNonStructuaralComponent[];
+    components: NonStructuaralComponent[];
 };
 
 export const fetchItemsAndComponents = async (input: FetchItemsInput, { api }: Deps): Promise<Item[]> => {
@@ -151,32 +148,26 @@ export const fetchItemsAndComponents = async (input: FetchItemsInput, { api }: D
         }
         return {
             ...item,
-            components: input.components.map((componentPath) => {
-                const main = componentPath[0];
-                const component = item.components.find((c) => c?.componentId === main);
-                const comp = getComponent(component, componentPath.slice(1)) as Omit<
-                    NonStructuaralComponent,
-                    'componentId'
-                > | null;
-                if (comp === null) {
+            components: input.components.map((componentId) => {
+                const component = item.components.find((c) => c?.componentId === componentId.split('/')[0]);
+                const comp = getComponent(component, componentId.split('/').slice(1)) as NonStructuaralComponent | null;
+                if (comp === null || !comp.content) {
                     const s = shapeMappings[item.shapeIdentifier];
-                    const comp = getEmptyFromShape(s.components ?? [], componentPath);
+                    const comp = getEmptyFromShape(s.components ?? [], componentId.split('/'));
                     if (!comp) {
                         throw new Error(
-                            `Impossible to get an empty value for Shape ${item.shapeIdentifier} with ${componentPath}`,
+                            `Impossible to get an empty value for Shape ${item.shapeIdentifier} with ${componentId}`,
                         );
                     }
                     return {
-                        componentPath,
-                        content: comp.content,
-                        type: comp.type,
-                    };
+                        ...comp,
+                        componentId,
+                    } as NonStructuaralComponent;
                 }
                 return {
-                    componentPath,
-                    content: comp.content,
-                    type: comp.type,
-                };
+                    ...comp,
+                    componentId,
+                } as NonStructuaralComponent;
             }),
         };
     });

@@ -1,6 +1,6 @@
 import { CrystallizeAPI } from '~/infrastructure/crystallize/create-crystallize-api.server';
 import { SelectOption } from '../contracts/select-option';
-import { allowedComponentTypes, nestedComponentSeparator } from '../contracts/allowed-component-types';
+import { allowedComponentTypes } from '../contracts/allowed-component-types';
 import { ShapeComponent } from '@crystallize/schema';
 
 type Deps = {
@@ -91,7 +91,7 @@ const reduceComponents = (
         if (!extendedAllowedComponentTypes.includes(component.type)) {
             return;
         }
-        const componentPathValue = `${applyPrefix(component.id, nestedComponentSeparator, prefix?.identifier)}`;
+        const componentPathValue = `${applyPrefix(component.id, '/', prefix?.identifier)}`;
         const componentPathLabel = `${applyPrefix(component.id, ' > ', prefix?.name)}`;
 
         if (component.type === 'contentChunk') {

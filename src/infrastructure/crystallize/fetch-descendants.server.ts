@@ -17,7 +17,7 @@ export type InnerNode = {
 export const fetchDescendants = async (
     folderIds: string[],
     language: string,
-    componentIds: string[][],
+    componentIds: string[],
     { browser }: Deps,
 ) => {
     const list = [];
@@ -36,7 +36,7 @@ export const fetchDescendants = async (
                 },
                 ...(componentIds.length > 0 &&
                     componentIds.reduce((memo: Record<string, unknown>, componentId) => {
-                        const main = componentId[0];
+                        const main = componentId.split('/')[0];
                         const alias = normalizeForGraphQL(`__component__` + main);
                         memo[alias] = {
                             __aliasFor: 'component',

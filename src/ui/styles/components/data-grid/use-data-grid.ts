@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useState, useEffect, useRef } from 'react';
 import { Item, GridCell, TextCell, GridSelection, BooleanCell, NumberCell } from '@glideapps/glide-data-grid';
-import { nestedComponentSeparator } from '~/domain/contracts/allowed-component-types';
 import { Item as ListItem } from '~/domain/use-cases/fetch-items-and-components.server';
 
 import { ActionData, LoaderData } from '../../types';
@@ -32,10 +31,8 @@ export const useDataGrid = ({ actionData, loaderData }: UseDataGridProps) => {
         ([col, row]: Item, val: GridCell) => {
             const column = columns[col];
             const itemId = itemsRef.current?.[row].id;
-            const componentPath = column.id?.split(nestedComponentSeparator);
-            const component = itemsRef.current?.[row].components.find(
-                (c) => JSON.stringify(c.componentPath) === JSON.stringify(componentPath),
-            );
+            const componentId = column.id;
+            const component = itemsRef.current?.[row].components.find((c) => c.componentId === componentId);
 
             if (!component || !itemId) {
                 return;
@@ -54,9 +51,7 @@ export const useDataGrid = ({ actionData, loaderData }: UseDataGridProps) => {
             }
 
             // Check if value is different than initial
-            const initialComponent = items?.[row].components.find(
-                (c) => JSON.stringify(c.componentPath) === JSON.stringify(componentPath),
-            );
+            const initialComponent = items?.[row].components.find((c) => c.componentId === componentId);
 
             if (JSON.stringify(component) !== JSON.stringify(initialComponent)) {
                 setChangedColumns((prev) => new Map(prev.set(itemId, (prev.get(itemId) ?? new Set()).add(col))));

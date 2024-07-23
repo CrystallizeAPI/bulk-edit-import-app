@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
 import { GridColumn, Item, GridCell, GridCellKind } from '@glideapps/glide-data-grid';
-import { nestedComponentSeparator } from '~/domain/contracts/allowed-component-types';
 import { SelectOption } from '~/domain/contracts/select-option';
 import { Item as ListItem } from '~/domain/use-cases/fetch-items-and-components.server';
 
@@ -54,10 +53,8 @@ export const useColumns = ({ items, components }: UseColumnsProps) => {
                 };
             }
 
-            const componentPath = columnId.split(nestedComponentSeparator);
-            const component = item.components.find(
-                (c) => JSON.stringify(c.componentPath) === JSON.stringify(componentPath),
-            );
+            const componentId = columnId;
+            const component = item.components.find((c) => c.componentId === componentId);
 
             if (!component) {
                 return {

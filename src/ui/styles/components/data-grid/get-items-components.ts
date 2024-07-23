@@ -1,6 +1,4 @@
 import { Item as ListItem } from '~/domain/use-cases/fetch-items-and-components.server';
-import { nestedComponentSeparator } from '~/domain/contracts/allowed-component-types';
-
 import { ActionData, LoaderData } from '../../types';
 
 type GetItemsComponentsProps = {
@@ -17,11 +15,11 @@ export const getItemsComponents = ({ actionData, loaderData }: GetItemsComponent
     const shape = !!actionData && 'shape' in actionData.values ? actionData.values.shape : undefined;
 
     const selectedComponents = (!!actionData && 'components' in actionData.values && actionData.values.components) as
-        | string[][]
+        | string[]
         | undefined;
 
     const components = filterList.componentsMap[shape as keyof typeof filterList.componentsMap]?.filter((component) =>
-        selectedComponents?.map((c) => c.join(nestedComponentSeparator)).includes(component.value),
+        selectedComponents?.map((c) => c.includes(component.value)),
     );
 
     return { items, components };
