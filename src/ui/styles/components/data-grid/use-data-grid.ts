@@ -120,8 +120,6 @@ export const useDataGrid = ({ actionData, loaderData }: UseDataGridProps) => {
         return formData;
     }, [changedColumns, columns]);
 
-    console.log(items, columns);
-
     return {
         theme,
         columns,

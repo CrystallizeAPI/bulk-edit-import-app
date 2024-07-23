@@ -60,9 +60,7 @@ export const Filters = ({ actionData, loaderData }: FiltersFormProps) => {
                     name="shape"
                     isMulti={false}
                     options={filterList.shapes}
-                    onChange={(selected: { value: string } | null) => {
-                        setShapeIdentifier(selected?.value);
-                    }}
+                    onChange={(selected) => setShapeIdentifier((selected as { value: string } | null)?.value)}
                 />
                 {errorFor('shape')}
             </div>

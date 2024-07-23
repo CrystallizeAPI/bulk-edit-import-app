@@ -29,12 +29,20 @@ export default function Index() {
     const actionData = useActionData<typeof action>();
     const loaderData = useLoaderData<typeof loader>();
     const submit = useSubmit();
+    const onSubmit = (formData: FormData, action: 'saveItems' | 'savePublishItems') => {
+        formData.append('_action', action);
+        submit(formData, { method: 'post', encType: 'multipart/form-data' });
+    };
 
     return (
         <Form method="post" className="flex flex-col h-screen overflow-hidden bg-[#f5f5f6] px-8">
             <DataGrid actionData={actionData} loaderData={loaderData}>
                 {({ isRemoveDisabled, onRemoveSelected, hasChanges, getChangedComponents }) => {
-                    const actions = [{ ...removeAction, disabled: isRemoveDisabled, onSelect: onRemoveSelected }];
+                    const actions = [
+                        { key: 'import', name: 'Import', onSelect: () => {} },
+                        { key: 'export', name: 'Export', onSelect: () => {} },
+                        { ...removeAction, disabled: isRemoveDisabled, onSelect: onRemoveSelected },
+                    ];
 
                     return (
                         <>
@@ -44,13 +52,13 @@ export default function Index() {
                                 <Toolbar.Button
                                     disabled={!hasChanges}
                                     text="Save changes"
-                                    onClick={() => submit(getChangedComponents(), { action: 'saveItems' })}
+                                    onClick={() => onSubmit(getChangedComponents(), 'saveItems')}
                                 />
                                 <Toolbar.Button
                                     intent="action"
                                     disabled={!hasChanges}
                                     text="Save and publish"
-                                    onClick={() => submit(getChangedComponents(), { action: 'savePublishItems' })}
+                                    onClick={() => onSubmit(getChangedComponents(), 'savePublishItems')}
                                 />
                             </Toolbar.Container>
 
