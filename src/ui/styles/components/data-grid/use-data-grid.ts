@@ -101,6 +101,27 @@ export const useDataGrid = ({ actionData, loaderData }: UseDataGridProps) => {
         setGridSelection(undefined);
     }, [selectedRowsItem]);
 
+    const getChangedComponents = useCallback(() => {
+        const formData = new FormData();
+
+        changedColumns.forEach((columnsSet, itemId) => {
+            columnsSet.forEach((col) => {
+                const componentId = columns[col].id;
+                const component = itemsRef.current
+                    ?.find((item) => item.id === itemId)
+                    ?.components.find((component) => component.componentId === componentId);
+
+                if (component) {
+                    formData.append(`item[${itemId}][${componentId}]`, JSON.stringify(component));
+                }
+            });
+        });
+
+        return formData;
+    }, [changedColumns, columns]);
+
+    console.log(items, columns);
+
     return {
         theme,
         columns,
@@ -111,6 +132,7 @@ export const useDataGrid = ({ actionData, loaderData }: UseDataGridProps) => {
         gridSelection,
         setGridSelection,
         onRemoveSelected,
+        getChangedComponents,
         itemsLength: itemsRef.current?.length,
         isRemoveDisabled: !selectedRowsItem?.length,
     };

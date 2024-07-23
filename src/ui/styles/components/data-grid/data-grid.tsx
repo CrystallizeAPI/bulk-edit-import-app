@@ -9,6 +9,7 @@ type ChildrenProps = {
     isRemoveDisabled: boolean;
     hasChanges: boolean;
     onRemoveSelected: () => void;
+    getChangedComponents: () => FormData;
 };
 
 type DataEditorProps = {
@@ -30,6 +31,7 @@ export const DataGrid = ({ actionData, loaderData, children }: DataEditorProps) 
         onRemoveSelected,
         isRemoveDisabled,
         itemsLength,
+        getChangedComponents,
     } = useDataGrid({
         actionData,
         loaderData,
@@ -37,7 +39,12 @@ export const DataGrid = ({ actionData, loaderData, children }: DataEditorProps) 
 
     return (
         <>
-            {children({ isRemoveDisabled, onRemoveSelected, hasChanges: !!highlightRegions?.length })}
+            {children({
+                isRemoveDisabled,
+                onRemoveSelected,
+                getChangedComponents,
+                hasChanges: !!highlightRegions?.length,
+            })}
             {typeof itemsLength === 'number' && (
                 <div className="overflow-hidden rounded-xl border border-solid border-gray-100-800 bg-white shadow-sm mb-8">
                     <DataEditor

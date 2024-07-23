@@ -1,5 +1,5 @@
 import { ActionFunctionArgs, LoaderFunctionArgs, json } from '@remix-run/node';
-import { Form, useActionData, useLoaderData } from '@remix-run/react';
+import { Form, useActionData, useLoaderData, useSubmit } from '@remix-run/react';
 import { retrieveFilterListForFrontend } from '~/domain/use-cases/retrieve-filter-list-for-frontend.server';
 import { indexPageAction } from '~/infrastructure/actions/index-page-action.server';
 import { buildServices } from '~/infrastructure/core/services.server';
@@ -23,31 +23,35 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return json(results);
 };
 
+const removeAction = { key: 'remove-selected', name: 'Remove selected', className: 'danger' };
+
 export default function Index() {
     const actionData = useActionData<typeof action>();
     const loaderData = useLoaderData<typeof loader>();
+    const submit = useSubmit();
 
     return (
         <Form method="post" className="flex flex-col h-screen overflow-hidden bg-[#f5f5f6] px-8">
             <DataGrid actionData={actionData} loaderData={loaderData}>
-                {({ isRemoveDisabled, onRemoveSelected, hasChanges }) => {
-                    const actions = [
-                        {
-                            key: 'remove-selected',
-                            name: 'Remove selected',
-                            className: 'danger',
-                            disabled: isRemoveDisabled,
-                            onSelect: onRemoveSelected,
-                        },
-                    ];
+                {({ isRemoveDisabled, onRemoveSelected, hasChanges, getChangedComponents }) => {
+                    const actions = [{ ...removeAction, disabled: isRemoveDisabled, onSelect: onRemoveSelected }];
 
                     return (
                         <>
                             <Toolbar.Container>
                                 <Toolbar.Input label="App" input={<input defaultValue="Batch edit" />} />
                                 <Toolbar.Actions actions={actions} />
-                                <Toolbar.Button disabled={!hasChanges} text="Save changes" />
-                                <Toolbar.Button intent="action" disabled={!hasChanges} text="Save and publish" />
+                                <Toolbar.Button
+                                    disabled={!hasChanges}
+                                    text="Save changes"
+                                    onClick={() => submit(getChangedComponents(), { action: 'saveItems' })}
+                                />
+                                <Toolbar.Button
+                                    intent="action"
+                                    disabled={!hasChanges}
+                                    text="Save and publish"
+                                    onClick={() => submit(getChangedComponents(), { action: 'savePublishItems' })}
+                                />
                             </Toolbar.Container>
 
                             <Filters actionData={actionData} loaderData={loaderData} />

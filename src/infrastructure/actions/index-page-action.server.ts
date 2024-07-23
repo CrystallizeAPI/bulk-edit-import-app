@@ -55,5 +55,5 @@ export const indexPageAction = async (formData: FormData, { api, emitter }: Deps
         );
         return results;
     }
-    return { success: false, errors: { global: 'Unknow action.' }, values: {}, results: undefined };
+    return { success: false, errors: { global: 'Unknown action.' }, values: {}, results: undefined };
 };

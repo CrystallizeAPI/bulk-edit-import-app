@@ -19,7 +19,7 @@ export const getItemsComponents = ({ actionData, loaderData }: GetItemsComponent
         | undefined;
 
     const components = filterList.componentsMap[shape as keyof typeof filterList.componentsMap]?.filter((component) =>
-        selectedComponents?.map((c) => c.includes(component.value)),
+        selectedComponents?.includes(component.value),
     );
 
     return { items, components };
