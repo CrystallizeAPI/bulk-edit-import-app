@@ -45,7 +45,7 @@ export const DataGrid = ({ actionData, loaderData, children }: DataEditorProps) 
                 getChangedComponents,
                 hasChanges: !!highlightRegions?.length,
             })}
-            {typeof itemsLength === 'number' && (
+            {typeof itemsLength === 'number' && itemsLength > 0 && (
                 <div className="overflow-hidden rounded-xl border border-solid border-gray-100-800 bg-white shadow-sm mb-8">
                     <DataEditor
                         width="100%"

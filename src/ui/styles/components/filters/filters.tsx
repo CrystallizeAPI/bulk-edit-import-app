@@ -1,18 +1,18 @@
-import { useState } from 'react';
 import { Select } from '../select';
 import { Button } from '@crystallize/design-system';
 import { useNavigation } from '@remix-run/react';
 import { ActionData, LoaderData } from '../../types';
 
 type FiltersFormProps = {
+    shapeIdentifier?: string;
+    onShapeChange: (shapeIdentifier?: string) => void;
     actionData: ActionData;
     loaderData: LoaderData;
 };
 
-export const Filters = ({ actionData, loaderData }: FiltersFormProps) => {
+export const Filters = ({ shapeIdentifier, onShapeChange, actionData, loaderData }: FiltersFormProps) => {
     const { filterList } = loaderData;
     const navigation = useNavigation();
-    const [shapeIdentifier, setShapeIdentifier] = useState<string | undefined>(undefined);
     const errorFor = (field: string) => {
         if (!actionData || actionData.success === true || !actionData.errors) {
             return null;
@@ -60,23 +60,23 @@ export const Filters = ({ actionData, loaderData }: FiltersFormProps) => {
                     name="shape"
                     isMulti={false}
                     options={filterList.shapes}
-                    onChange={(selected) => setShapeIdentifier((selected as { value: string } | null)?.value)}
+                    onChange={(selected) => onShapeChange((selected as { value: string } | null)?.value)}
                 />
                 {errorFor('shape')}
             </div>
             <div className="grow">
-                <Select className="grow" name="folders" isMulti={true} options={filterList.folders} />
+                <Select className="grow" name="folders" isMulti options={filterList.folders} />
                 {errorFor('folders')}
             </div>
             <div className="grow">
-                <Select className="grow" name="topics" isMulti={true} options={filterList.topics} />
+                <Select className="grow" name="topics" isMulti options={filterList.topics} />
                 {errorFor('topics')}
             </div>
             <div className="grow">
                 <Select
                     className="grow"
                     name="components"
-                    isMulti={true}
+                    isMulti
                     isDisabled={!shapeIdentifier}
                     options={shapeIdentifier ? filterList.componentsMap[shapeIdentifier] : []}
                 />

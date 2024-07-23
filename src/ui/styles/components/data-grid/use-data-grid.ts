@@ -6,7 +6,7 @@ import { ActionData, LoaderData } from '../../types';
 
 import { theme } from './theme';
 import { useColumns } from './use-columns';
-import { getItemsComponents } from './get-items-components';
+import { getItemsComponents } from '../../utils/get-items-components';
 
 type UseDataGridProps = {
     actionData: ActionData;
@@ -21,10 +21,8 @@ export const useDataGrid = ({ actionData, loaderData }: UseDataGridProps) => {
     const { columns, getCellContent, onColumnResize } = useColumns({ items: itemsRef.current, components });
 
     useEffect(() => {
-        if (items) {
-            itemsRef.current = structuredClone(items);
-            setChangedColumns(new Map());
-        }
+        itemsRef.current = structuredClone(items);
+        setChangedColumns(new Map());
     }, [items]);
 
     const onCellEdited = useCallback(

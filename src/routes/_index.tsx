@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { ActionFunctionArgs, LoaderFunctionArgs, json } from '@remix-run/node';
 import { Form, useActionData, useLoaderData, useSubmit } from '@remix-run/react';
 import { retrieveFilterListForFrontend } from '~/domain/use-cases/retrieve-filter-list-for-frontend.server';
@@ -6,8 +7,9 @@ import { buildServices } from '~/infrastructure/core/services.server';
 import { CrystallizeAPI } from '~/infrastructure/crystallize/create-crystallize-api.server';
 import { DataGrid } from '~/ui/styles/components/data-grid/data-grid';
 import { Filters } from '~/ui/styles/components/filters';
-import { ImportRunning } from '~/ui/styles/components/import-running';
-import { Toolbar } from '~/ui/styles/components/toolbar';
+import { GridToolbar } from '~/ui/styles/components/grid-toolbar/grid-toolbar';
+import { NotificationPanel } from '~/ui/styles/components/notification-panel';
+import { useImportStatus } from '~/ui/styles/hooks/use-import-status';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const api = await CrystallizeAPI(request);
@@ -23,47 +25,52 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return json(results);
 };
 
-const removeAction = { key: 'remove-selected', name: 'Remove selected', className: 'danger' };
-
 export default function Index() {
     const actionData = useActionData<typeof action>();
     const loaderData = useLoaderData<typeof loader>();
+    const [rerenderKey, setRerenderKey] = useState(0); // reset selected filters
+    const [shapeIdentifier, setShapeIdentifier] = useState<string | undefined>(undefined);
+
+    const { hasEnded } = useImportStatus(actionData);
     const submit = useSubmit();
+
     const onSubmit = (formData: FormData, action: 'saveItems' | 'savePublishItems') => {
         formData.append('_action', action);
         submit(formData, { method: 'post', encType: 'multipart/form-data' });
     };
 
+    useEffect(() => {
+        if (hasEnded) {
+            setRerenderKey((prev) => prev + 1);
+            setShapeIdentifier(undefined);
+        }
+    }, [hasEnded]);
+
     return (
         <Form method="post" className="flex flex-col h-screen overflow-hidden bg-[#f5f5f6] px-8">
             <DataGrid actionData={actionData} loaderData={loaderData}>
                 {({ isRemoveDisabled, onRemoveSelected, hasChanges, getChangedComponents }) => {
-                    const actions = [
-                        { key: 'import', name: 'Import', onSelect: () => {} },
-                        { key: 'export', name: 'Export', disabled: hasChanges, onSelect: () => {} },
-                        { ...removeAction, disabled: isRemoveDisabled, onSelect: onRemoveSelected },
-                    ];
-
                     return (
                         <>
-                            <Toolbar.Container>
-                                <Toolbar.Input label="App" input={<input defaultValue="Batch edit" />} />
-                                <Toolbar.Actions actions={actions} />
-                                <Toolbar.Button
-                                    disabled={!hasChanges}
-                                    text="Save changes"
-                                    onClick={() => onSubmit(getChangedComponents(), 'saveItems')}
-                                />
-                                <Toolbar.Button
-                                    intent="action"
-                                    disabled={!hasChanges}
-                                    text="Save and publish"
-                                    onClick={() => onSubmit(getChangedComponents(), 'savePublishItems')}
-                                />
-                            </Toolbar.Container>
-
-                            <Filters actionData={actionData} loaderData={loaderData} />
-                            <ImportRunning actionData={actionData} />
+                            <GridToolbar
+                                isRemoveDisabled={isRemoveDisabled}
+                                hasChanges={hasChanges}
+                                onRemove={onRemoveSelected}
+                                onSave={() => onSubmit(getChangedComponents(), 'saveItems')}
+                                onSavePublish={() => onSubmit(getChangedComponents(), 'savePublishItems')}
+                            />
+                            <Filters
+                                key={rerenderKey}
+                                shapeIdentifier={shapeIdentifier}
+                                onShapeChange={setShapeIdentifier}
+                                actionData={actionData}
+                                loaderData={loaderData}
+                            />
+                            <NotificationPanel
+                                hasShape={!!shapeIdentifier}
+                                actionData={actionData}
+                                loaderData={loaderData}
+                            />
                         </>
                     );
                 }}
