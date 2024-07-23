@@ -1,0 +1,18 @@
+export const theme = {
+    baseFontStyle: '0.8125rem',
+    headerFontStyle: '600 0.8125rem',
+    editorFontSize: '0.8125rem',
+    accentColor: '#FEA9FA',
+    accentLight: '#FFF4FF',
+    textDark: '#4C4F5A',
+    textBubble: '#403953',
+    bgBubble: '#EEECF2',
+    bgCell: '#ffffff',
+    bgHeader: '#F7F6F9',
+    bgBubbleSelected: '#d8d5e288',
+    borderBubble: '#d8d5e2',
+    textHeader: '#626778',
+    textHeaderSelected: '#921684',
+    bgHeaderHasFocus: '#FFE7FF',
+    borderColor: '#e4e5e9',
+};
