@@ -86,8 +86,8 @@ export const useColumns = ({ items, components }: UseColumnsProps) => {
             }
 
             if (component.type === 'richText') {
-                const text = 'plainText' in component.content ? `${component.content.plainText}` : '';
-                const data = (Array.isArray(text) ? text.join('/n') : text) ?? '';
+                const text = 'plainText' in component.content ? component.content.plainText : '';
+                const data = (Array.isArray(text) ? text.join('\n') : text) ?? '';
                 return {
                     kind: GridCellKind.Text,
                     data,

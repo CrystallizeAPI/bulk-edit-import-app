@@ -14,8 +14,6 @@ export const NotificationPanel = ({ hasShape, actionData, loaderData }: ImportRu
     const { items } = getItemsComponents({ actionData, loaderData });
     const showSuccess = hasEnded && !hasShape;
 
-    console.log(hasShape);
-
     const notifications: [boolean, { title: string; message?: string }][] = [
         [
             !!hasShape && items?.length === 0,
