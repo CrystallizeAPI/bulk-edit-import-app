@@ -14,7 +14,6 @@ type Deps = {
 };
 
 const getComponent = (component?: Component, wNestedPath?: string[]) => {
-    console.log({ component, wNestedPath });
     if (!component) {
         return null;
     }

@@ -10,6 +10,7 @@ import { Filters } from '~/ui/styles/components/filters';
 import { GridToolbar } from '~/ui/styles/components/grid-toolbar/grid-toolbar';
 import { NotificationPanel } from '~/ui/styles/components/notification-panel';
 import { useImportStatus } from '~/ui/styles/hooks/use-import-status';
+import writeXlsxFile from 'write-excel-file';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const api = await CrystallizeAPI(request);
@@ -49,7 +50,7 @@ export default function Index() {
     return (
         <Form method="post" className="flex flex-col h-screen overflow-hidden bg-[#f5f5f6] px-8">
             <DataGrid actionData={actionData} loaderData={loaderData}>
-                {({ isRemoveDisabled, onRemoveSelected, hasChanges, getChangedComponents }) => {
+                {({ isRemoveDisabled, onRemoveSelected, hasChanges, getChangedComponents, items }) => {
                     return (
                         <>
                             <GridToolbar
@@ -58,6 +59,62 @@ export default function Index() {
                                 onRemove={onRemoveSelected}
                                 onSave={() => onSubmit(getChangedComponents(), 'saveItems')}
                                 onSavePublish={() => onSubmit(getChangedComponents(), 'savePublishItems')}
+                                onExport={async () => {
+                                    //@todo: @Plopix extract that code somewhere to keep that Index clear
+                                    const headers: string[] = (
+                                        actionData && actionData.values && 'components' in actionData.values
+                                            ? actionData.values.components || []
+                                            : []
+                                    ) as string[];
+                                    const itemCells =
+                                        items?.map((item) => {
+                                            const cells = item.components.map((component) => {
+                                                let value = '';
+                                                const content = component.content;
+                                                if (component.type === 'singleLine' && 'text' in content) {
+                                                    value = content.text;
+                                                } else if (component.type === 'richText' && 'plainText' in content) {
+                                                    value = content.plainText.join('\n');
+                                                } else if (component.type === 'boolean' && 'value' in content) {
+                                                    value = content.value ? '1' : '0';
+                                                } else if (component.type === 'numeric' && 'number' in content) {
+                                                    value = content.number.toString();
+                                                }
+                                                return {
+                                                    type: String,
+                                                    value,
+                                                };
+                                            });
+                                            return [
+                                                {
+                                                    type: String,
+                                                    value: item.name,
+                                                },
+                                                ...cells,
+                                            ];
+                                        }) ?? [];
+
+                                    await writeXlsxFile(
+                                        [
+                                            [
+                                                {
+                                                    type: String,
+                                                    value: 'Name',
+                                                },
+                                                ...headers.map((head) => {
+                                                    return {
+                                                        type: String,
+                                                        value: head,
+                                                    };
+                                                }),
+                                            ],
+                                            ...itemCells,
+                                        ],
+                                        {
+                                            fileName: 'file.xlsx',
+                                        },
+                                    );
+                                }}
                             />
                             <Filters
                                 key={rerenderKey}

@@ -1,6 +1,7 @@
 import { DataEditor } from '@glideapps/glide-data-grid';
 import { useDataGrid } from './use-data-grid';
 import { ActionData, LoaderData } from '../../types';
+import { Item as ListItem } from '~/domain/use-cases/fetch-items-and-components.server';
 
 import '@glideapps/glide-data-grid/dist/index.css';
 import '@crystallize/design-system/styles.css';
@@ -8,6 +9,7 @@ import '@crystallize/design-system/styles.css';
 type ChildrenProps = {
     isRemoveDisabled: boolean;
     hasChanges: boolean;
+    items: ListItem[] | undefined;
     onRemoveSelected: () => void;
     getChangedComponents: () => FormData;
 };
@@ -31,6 +33,7 @@ export const DataGrid = ({ actionData, loaderData, children }: DataEditorProps) 
         onRemoveSelected,
         isRemoveDisabled,
         itemsLength,
+        items,
         getChangedComponents,
     } = useDataGrid({
         actionData,
@@ -41,6 +44,7 @@ export const DataGrid = ({ actionData, loaderData, children }: DataEditorProps) 
         <>
             {children({
                 isRemoveDisabled,
+                items,
                 onRemoveSelected,
                 getChangedComponents,
                 hasChanges: !!highlightRegions?.length,

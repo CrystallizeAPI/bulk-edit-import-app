@@ -128,6 +128,7 @@ export const useDataGrid = ({ actionData, loaderData }: UseDataGridProps) => {
         gridSelection,
         setGridSelection,
         onRemoveSelected,
+        items: itemsRef.current,
         getChangedComponents,
         itemsLength: itemsRef.current?.length,
         isRemoveDisabled: !selectedRowsItem?.length,
