@@ -71,17 +71,8 @@ export const getCookieValue = (request: Request, name: string): string | undefin
 };
 export const requirePimAwareApiClient = async (request: Request): Promise<ClientInterface> => {
     const signatureChecked = await requireValidSession(request);
-    const host = request.headers.get('Host')!;
-    // Verify the signature ONLY if we are not in a Crystallize ENV
-    // There is no other way to do multi-tenancy Apps otherwise
-    if (host.endsWith('.crystallize.com')) {
-        return createClient({
-            tenantId: signatureChecked.tenantId,
-            tenantIdentifier: signatureChecked.tenantIdentifier,
-            sessionId: getCookieValue(request, 'connect.sid'),
-        });
-    }
-    const debugOptions: CreateClientOptions = {
+    const options: CreateClientOptions = {
+        useHttp2: true,
         profiling: {
             // onRequest(query, variables) {
             //     logger.debug("profiling", {
@@ -98,6 +89,19 @@ export const requirePimAwareApiClient = async (request: Request): Promise<Client
             },
         },
     };
+    const host = request.headers.get('Host')!;
+    // Verify the signature ONLY if we are not in a Crystallize ENV
+    // There is no other way to do multi-tenancy Apps otherwise
+    if (host.endsWith('.crystallize.com')) {
+        return createClient(
+            {
+                tenantId: signatureChecked.tenantId,
+                tenantIdentifier: signatureChecked.tenantIdentifier,
+                sessionId: getCookieValue(request, 'connect.sid'),
+            },
+            options,
+        );
+    }
     return createClient(
         {
             tenantId: signatureChecked.tenantId,
@@ -105,6 +109,6 @@ export const requirePimAwareApiClient = async (request: Request): Promise<Client
             accessTokenId: `${process.env.CRYSTALLIZE_ACCESS_TOKEN_ID}`,
             accessTokenSecret: `${process.env.CRYSTALLIZE_ACCESS_TOKEN_SECRET}`,
         },
-        debugOptions,
+        options,
     );
 };

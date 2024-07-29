@@ -1,35 +1,41 @@
-type BaseComponent = {
-    componentId: string;
-};
+import { z } from 'zod';
 
-export type NonStructuaralComponent =
-    | ({
-          type: 'richText';
-          content: {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any -- This is a JSON object
-              json: any[];
-              html: string[];
-              plainText: string[];
-          };
-      } & BaseComponent)
-    | ({
-          type: 'singleLine';
-          content: {
-              text: string;
-          };
-      } & BaseComponent)
-    | ({
-          type: 'numeric';
-          content: {
-              number: number;
-          };
-      } & BaseComponent)
-    | ({
-          type: 'boolean';
-          content: {
-              value: boolean;
-          };
-      } & BaseComponent);
+const BaseComponentSchema = z.object({
+    componentId: z.string(),
+});
+type BaseComponent = z.infer<typeof BaseComponentSchema>;
+
+export const NonStructuaralComponentSchema = BaseComponentSchema.and(
+    z.union([
+        z.object({
+            type: z.literal('richText'),
+            content: z.object({
+                json: z.array(z.any()),
+                html: z.array(z.string()),
+                plainText: z.array(z.string()),
+            }),
+        }),
+        z.object({
+            type: z.literal('singleLine'),
+            content: z.object({
+                text: z.string(),
+            }),
+        }),
+        z.object({
+            type: z.literal('numeric'),
+            content: z.object({
+                number: z.number(),
+            }),
+        }),
+        z.object({
+            type: z.literal('boolean'),
+            content: z.object({
+                value: z.boolean(),
+            }),
+        }),
+    ]),
+);
+export type NonStructuaralComponent = z.infer<typeof NonStructuaralComponentSchema>;
 
 export type StructuralComponent =
     | ({

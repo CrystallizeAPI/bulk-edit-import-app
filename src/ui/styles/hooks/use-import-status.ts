@@ -8,9 +8,10 @@ export const useImportStatus = (actionData: ActionData) => {
             ? actionData.results.importId
             : undefined;
     const importingItemsCount =
-        actionData && 'results' in actionData && 'itemCount' in actionData.results
-            ? actionData.results.itemCount
+        actionData && 'results' in actionData && 'operationCount' in actionData.results
+            ? actionData.results.operationCount
             : undefined;
+
     const data = useEventSource(`/api/import/stream/${importId}`, { event: 'log' });
 
     const [importState, setImportState] = useState<{

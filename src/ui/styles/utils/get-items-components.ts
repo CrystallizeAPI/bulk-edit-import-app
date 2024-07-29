@@ -1,5 +1,5 @@
 import { Item as ListItem } from '~/domain/use-cases/fetch-items-and-components.server';
-import { ActionData, LoaderData } from '../../types';
+import { ActionData, LoaderData } from '../types';
 
 type GetItemsComponentsProps = {
     actionData: ActionData;

@@ -5,6 +5,7 @@ import { fetchItemsAndComponents } from '~/domain/use-cases/fetch-items-and-comp
 import { FetchItemsInputSchema } from '~/domain/contracts/input/fetch-items-input';
 import { z } from 'zod';
 import { saveItems } from '~/domain/use-cases/save-items.server';
+import { NonStructuaralComponent, NonStructuaralComponentSchema } from '~/domain/contracts/components';
 
 type Deps = {
     api: CrystallizeAPI;
@@ -32,8 +33,8 @@ export const indexPageAction = async (formData: FormData, { api, emitter }: Deps
         );
     }
 
-    if (action === 'saveItems') {
-        const values: Record<string, Record<string, string>> = {};
+    if (action === 'saveItems' || action === 'savePublishItems') {
+        const values: Record<string, Record<string, NonStructuaralComponent>> = {};
         for (const [key, value] of formData.entries()) {
             const match = key.match(/item\[(.*?)\]\[(.*?)\]/);
             if (match) {
@@ -43,15 +44,15 @@ export const indexPageAction = async (formData: FormData, { api, emitter }: Deps
                 if (!values[id]) {
                     values[id] = {};
                 }
-                values[id][dynamicKey] = value.toString();
+                values[id][dynamicKey] = JSON.parse(value.toString());
             }
         }
         const results = await executeForm(
             async (values) => {
-                return await saveItems(values, { emitter });
+                return await saveItems(values, action === 'savePublishItems', { emitter, api });
             },
             values,
-            z.record(z.record(z.string())),
+            z.record(z.record(NonStructuaralComponentSchema)),
         );
         return results;
     }

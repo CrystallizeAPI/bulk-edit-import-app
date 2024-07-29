@@ -14,6 +14,7 @@ type Deps = {
 };
 
 const getComponent = (component?: Component, wNestedPath?: string[]) => {
+    console.log({ component, wNestedPath });
     if (!component) {
         return null;
     }
@@ -24,20 +25,23 @@ const getComponent = (component?: Component, wNestedPath?: string[]) => {
 
     if (component.type === 'contentChunk') {
         // we only manage the first chunk
-        const chunk = component.content.chunks[0];
+        const chunk = component.content?.chunks[0];
         // now we need to find the first component in the chunk that match the nested Path
-        if (!wNestedPath || wNestedPath.length === 0) {
+        if (!wNestedPath || wNestedPath.length <= 1 || !chunk) {
             return null;
         }
-        const subComponent = chunk.find((c) => c.componentId === wNestedPath[0]);
-        return getComponent(subComponent, wNestedPath.slice(1));
+        // chunk are special as they are a list of list of components: array
+        // we don't manage array in this app yet but non repeating chunk yes
+        // we if that's a chunk we remove 1 more level here
+        const subComponent = chunk.find((c) => c.componentId === wNestedPath[1]);
+        return getComponent(subComponent, wNestedPath.slice(2));
     }
 
     if (component.type === 'piece') {
         if (!wNestedPath || wNestedPath.length === 0) {
             return null;
         }
-        const subComponent = component.content.components.find((c) => c.componentId === wNestedPath[0]);
+        const subComponent = component.content?.components.find((c) => c.componentId === wNestedPath[0]);
         return getComponent(subComponent, wNestedPath.slice(1));
     }
 
@@ -98,15 +102,16 @@ const getEmptyFromShape = (
     }
 
     if (component.type === 'contentChunk') {
-        return getEmptyFromShape((component.config as ContentChunkComponentConfig).components, wNestedPath.slice(1));
+        // chunk is an array so we remove 2 levels
+        return getEmptyFromShape((component.config as ContentChunkComponentConfig)?.components, wNestedPath.slice(2));
     }
 
     if (component.type === 'piece') {
-        return getEmptyFromShape((component.config as PieceComponentConfig).components, wNestedPath.slice(1));
+        return getEmptyFromShape((component.config as PieceComponentConfig)?.components, wNestedPath.slice(1));
     }
     if (component.type === 'componentChoice') {
         // we are going to take the first choice by default
-        return getEmptyFromShape((component.config as ComponentChoiceComponentConfig).choices, wNestedPath.slice(1));
+        return getEmptyFromShape((component.config as ComponentChoiceComponentConfig)?.choices, wNestedPath.slice(1));
     }
 
     return null;

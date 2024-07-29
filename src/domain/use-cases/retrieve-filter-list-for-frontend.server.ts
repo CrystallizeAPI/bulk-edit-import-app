@@ -102,7 +102,7 @@ const reduceComponents = (
             }
             if (config && 'components' in config) {
                 const chunkComponents = reduceComponents(config.components ?? [], {
-                    identifier: componentPathValue,
+                    identifier: `${componentPathValue}/0`,
                     name: componentPathLabel,
                 });
                 memo.push(...chunkComponents);

@@ -17,7 +17,7 @@
     "dependencies": {
         "@crystallize/design-system": "^1.24.15",
         "@crystallize/import-export-sdk": "^1.0.3",
-        "@crystallize/js-api-client": "^3.0.0",
+        "@crystallize/js-api-client": "^3.1.1",
         "@crystallize/reactjs-components": "^2.1.0",
         "@crystallize/schema": "^1.0.0",
         "@glideapps/glide-data-grid": "^6.0.3",
