@@ -7,7 +7,7 @@ import {
     PieceComponentConfig,
     Shape,
 } from '@crystallize/schema';
-import { Item } from '../contracts/item-list';
+import { InnerNode, Item } from '../contracts/item-list';
 
 type Deps = {
     api: CrystallizeAPI;
@@ -135,10 +135,18 @@ export const fetchItemsAndComponents = async (input: FetchItemsInput, { api }: D
         return true;
     });
 
+    return mapComponentInput(filteredItems, input, { api });
+};
+
+export const mapComponentInput = async (
+    items: InnerNode[],
+    input: Pick<FetchItemsInput, 'components'>,
+    { api }: Deps,
+): Promise<Item[]> => {
     const shapeMappings: Record<string, Shape> = {};
     const shapes = await api.fetchShapes();
 
-    return filteredItems.map((item) => {
+    return items.map((item) => {
         if (!shapeMappings[item.shapeIdentifier]) {
             const shape = shapes.find((shape) => shape.identifier === item.shapeIdentifier);
             if (!shape) {

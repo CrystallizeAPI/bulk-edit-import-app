@@ -126,7 +126,7 @@ export const createCatalogBrowser = (apiClient: ClientInterface) => {
 
 export type CatalogBrowser = Awaited<ReturnType<typeof createCatalogBrowser>>;
 
-const fragments = `#graphql
+export const fragments = `#graphql
 
 fragment Component on Component {
   ...BaseComponentDefinition

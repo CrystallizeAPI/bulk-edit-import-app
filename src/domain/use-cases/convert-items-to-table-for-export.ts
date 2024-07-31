@@ -2,7 +2,6 @@ import { SheetData } from 'write-excel-file';
 import { Item } from '../contracts/item-list';
 
 // this file is used on client
-
 export const convertItemsToTableForExport = (headers: string[], items: Item[]): SheetData => {
     const cellStyle = {
         wrap: true,
@@ -44,7 +43,14 @@ export const convertItemsToTableForExport = (headers: string[], items: Item[]): 
                 {
                     type: String,
                     value: item.id,
-                    ...cellStyle,
+                },
+                {
+                    type: String,
+                    value: item.shapeIdentifier,
+                },
+                {
+                    type: String,
+                    value: 'en',
                 },
                 {
                     type: String,
@@ -67,6 +73,16 @@ export const convertItemsToTableForExport = (headers: string[], items: Item[]): 
             {
                 type: String,
                 value: 'ID',
+                ...headerStyles,
+            },
+            {
+                type: String,
+                value: 'Shape',
+                ...headerStyles,
+            },
+            {
+                type: String,
+                value: 'Language',
                 ...headerStyles,
             },
             {

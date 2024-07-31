@@ -37,7 +37,7 @@ export default function Index() {
         hasEnded,
     });
 
-    const onSubmit = (formData: FormData, action: 'saveItems' | 'savePublishItems') => {
+    const onSubmit = (formData: FormData, action: 'saveItems' | 'savePublishItems' | 'setupItemsFromFile') => {
         formData.append('_action', action);
         languageOption?.value && formData.append('language', languageOption.value);
         submit(formData, { method: 'post', encType: 'multipart/form-data' });
@@ -55,6 +55,14 @@ export default function Index() {
                                 onRemove={onRemoveSelected}
                                 onSave={() => onSubmit(getChangedComponents(), 'saveItems')}
                                 onSavePublish={() => onSubmit(getChangedComponents(), 'savePublishItems')}
+                                onImport={(file) => {
+                                    if (!file) {
+                                        return;
+                                    }
+                                    const formData = new FormData();
+                                    formData.append('file', file);
+                                    onSubmit(formData, 'setupItemsFromFile');
+                                }}
                                 onExport={async () => {
                                     const headers: string[] = (
                                         actionData && actionData.values && 'components' in actionData.values
@@ -63,8 +71,8 @@ export default function Index() {
                                     ) as string[];
                                     const table = convertItemsToTableForExport(headers, items || []);
                                     await writeXlsxFile(table, {
-                                        columns: table[0].map(() => ({
-                                            width: 40,
+                                        columns: table[0].map((_, index) => ({
+                                            width: index > 3 ? 40 : 15,
                                         })),
                                         fileName: `crystallize-export-${(Date.now() / 1000).toFixed(0)}.xlsx`,
                                     });

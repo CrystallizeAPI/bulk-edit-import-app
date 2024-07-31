@@ -6,6 +6,8 @@ import { FetchItemsInputSchema } from '~/domain/contracts/input/fetch-items-inpu
 import { z } from 'zod';
 import { saveItems } from '~/domain/use-cases/save-items.server';
 import { NonStructuaralComponent, NonStructuaralComponentSchema } from '~/domain/contracts/components';
+import readXlsxFile from 'read-excel-file/node';
+import { convertTableToItemsForImport } from '~/domain/use-cases/convert-table-to-items-for-import.server';
 
 type Deps = {
     api: CrystallizeAPI;
@@ -55,6 +57,17 @@ export const indexPageAction = async (formData: FormData, { api, emitter }: Deps
             z.record(z.record(NonStructuaralComponentSchema)),
         );
         return results;
+    }
+
+    if (action === 'setupItemsFromFile') {
+        const file = formData.get('file') as File;
+        if (!file) {
+            return { success: false, errors: { global: 'No file selected.' }, values: {}, results: undefined };
+        }
+        const xlsx = await readXlsxFile(Buffer.from(new Uint8Array(await file.arrayBuffer())));
+        // remap the table to a list of items
+        const results = await convertTableToItemsForImport(xlsx, { api });
+        return { success: true, ...results, errors: {} };
     }
     return { success: false, errors: { global: 'Unknown action.' }, values: {}, results: undefined };
 };

@@ -7,6 +7,7 @@ type GridToolbarProps = {
     onSave: () => void;
     onSavePublish: () => void;
     onExport: () => void;
+    onImport: (file: File | undefined) => void;
 };
 
 const removeAction = { key: 'remove-selected', name: 'Remove selected', className: 'danger' };
@@ -24,12 +25,11 @@ export const GridToolbar = ({
     onSave,
     onSavePublish,
     onExport,
+    onImport,
     onRemove,
 }: GridToolbarProps) => {
-    const sendFileToServer = () => {};
-
     const actions = [
-        { key: 'import', name: 'Import', onSelect: () => onFilePickerOpen(sendFileToServer) },
+        { key: 'import', name: 'Import', onSelect: () => onFilePickerOpen(onImport) },
         { key: 'export', name: 'Export', disabled: hasChanges, onSelect: onExport },
         { ...removeAction, disabled: isRemoveDisabled, onSelect: onRemove },
     ];
