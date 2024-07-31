@@ -7,6 +7,7 @@ export type Item = Omit<InnerNode, 'components'> & {
 export type InnerNode = {
     id: string;
     name: string;
+    language: string;
     shapeIdentifier: string;
     topics: { id: string }[];
     components: Component[];

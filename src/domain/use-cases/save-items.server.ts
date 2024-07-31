@@ -10,6 +10,7 @@ type Deps = {
 };
 export const saveItems = async (
     todos: Record<string, Record<string, NonStructuaralComponent>>,
+    language: string,
     doPublish: boolean,
     { emitter, api }: Deps,
 ) => {
@@ -30,7 +31,7 @@ export const saveItems = async (
             operations.push({
                 concern: 'item',
                 action: 'updateComponent',
-                language: 'en',
+                language,
                 itemId: item.id,
                 component: {
                     componentId,
@@ -43,7 +44,7 @@ export const saveItems = async (
                 concern: 'item',
                 action: 'publish',
                 itemId: item.id,
-                language: 'en',
+                language,
             });
         }
     }

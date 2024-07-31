@@ -15,10 +15,11 @@ type Deps = {
 };
 export const indexPageAction = async (formData: FormData, { api, emitter }: Deps) => {
     const action = formData.get('_action');
+    const language = (formData.get('language') as string) || 'en';
 
     if (action === 'fetchItems') {
         const values = {
-            language: formData.get('language') || undefined,
+            language,
             shape: formData.get('shape') || undefined,
             folders: formData.getAll('folders').filter(Boolean),
             topics: formData.getAll('topics').filter(Boolean),
@@ -51,7 +52,7 @@ export const indexPageAction = async (formData: FormData, { api, emitter }: Deps
         }
         const results = await executeForm(
             async (values) => {
-                return await saveItems(values, action === 'savePublishItems', { emitter, api });
+                return await saveItems(values, language, action === 'savePublishItems', { emitter, api });
             },
             values,
             z.record(z.record(NonStructuaralComponentSchema)),

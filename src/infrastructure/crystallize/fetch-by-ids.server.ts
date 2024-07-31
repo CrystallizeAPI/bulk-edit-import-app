@@ -13,6 +13,7 @@ export const innerQuery = (componentIds: string[]) => {
     return {
         id: true,
         name: true,
+        language: true,
         shapeIdentifier: true,
         topics: {
             id: true,
@@ -45,6 +46,7 @@ export const reducedNode = (node: Omit<InnerNode, 'components'> & Record<string,
             id: node.id,
             name: node.name,
             shapeIdentifier: node.shapeIdentifier,
+            language: node.language,
             topics: node.topics || [],
             components: [],
         },

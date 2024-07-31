@@ -50,7 +50,7 @@ export const convertItemsToTableForExport = (headers: string[], items: Item[]): 
                 },
                 {
                     type: String,
-                    value: 'en',
+                    value: item.language,
                 },
                 {
                     type: String,
