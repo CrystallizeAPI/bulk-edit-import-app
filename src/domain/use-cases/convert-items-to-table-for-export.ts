@@ -4,6 +4,9 @@ import { Item } from '../contracts/item-list';
 // this file is used on client
 
 export const convertItemsToTableForExport = (headers: string[], items: Item[]): SheetData => {
+    const cellStyle = {
+        wrap: true,
+    };
     const itemCells =
         items?.map((item) => {
             const cells = item.components.map((component) => {
@@ -12,24 +15,28 @@ export const convertItemsToTableForExport = (headers: string[], items: Item[]): 
                     return {
                         type: String,
                         value: content.text,
+                        ...cellStyle,
                     };
                 }
                 if (component.type === 'richText' && 'plainText' in content) {
                     return {
                         type: String,
                         value: content.plainText.join('\n'),
+                        ...cellStyle,
                     };
                 }
                 if (component.type === 'boolean' && 'value' in content) {
                     return {
                         type: Boolean,
                         value: content.value,
+                        ...cellStyle,
                     };
                 }
                 if (component.type === 'numeric' && 'number' in content) {
                     return {
                         type: Number,
                         value: content.number,
+                        ...cellStyle,
                     };
                 }
             });
@@ -37,6 +44,7 @@ export const convertItemsToTableForExport = (headers: string[], items: Item[]): 
                 {
                     type: String,
                     value: item.id,
+                    ...cellStyle,
                 },
                 {
                     type: String,
@@ -46,20 +54,31 @@ export const convertItemsToTableForExport = (headers: string[], items: Item[]): 
             ];
         }) ?? [];
 
+    const headerStyles = {
+        fontWeight: 'bold',
+        fontSize: 12,
+        align: 'center',
+        alignVertical: 'center',
+        bottomBorderStyle: 'thick',
+        height: 30,
+    };
     return [
         [
             {
                 type: String,
                 value: 'ID',
+                ...headerStyles,
             },
             {
                 type: String,
                 value: 'Name',
+                ...headerStyles,
             },
             ...headers.map((head) => {
                 return {
                     type: String,
                     value: head,
+                    ...headerStyles,
                 };
             }),
         ],

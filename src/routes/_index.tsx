@@ -63,6 +63,9 @@ export default function Index() {
                                     ) as string[];
                                     const table = convertItemsToTableForExport(headers, items || []);
                                     await writeXlsxFile(table, {
+                                        columns: table[0].map(() => ({
+                                            width: 40,
+                                        })),
                                         fileName: `crystallize-export-${(Date.now() / 1000).toFixed(0)}.xlsx`,
                                     });
                                 }}
