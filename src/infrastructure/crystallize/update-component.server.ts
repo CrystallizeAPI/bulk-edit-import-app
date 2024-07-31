@@ -1,5 +1,5 @@
 import { ClientInterface } from '@crystallize/js-api-client';
-import { ComponentInput } from 'node_modules/@crystallize/schema/dist/item/components';
+import { ComponentInput } from '@crystallize/schema';
 
 type Deps = {
     apiClient: ClientInterface;

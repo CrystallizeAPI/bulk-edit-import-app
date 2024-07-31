@@ -6,7 +6,7 @@ import { fetchTopics } from '~/infrastructure/crystallize/fetch-topics.server';
 import { createCatalogBrowser } from './create-catalog-browser.server';
 import { fetchDescendants } from './fetch-descendants.server';
 import { updateComponent } from './update-component.server';
-import { ComponentInput } from 'node_modules/@crystallize/schema/dist/item/components';
+import { ComponentInput } from '@crystallize/schema';
 import { publishItem } from './publish-item.server';
 import { fetchByIds } from './fetch-by-ids.server';
 

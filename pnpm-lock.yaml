@@ -21,8 +21,8 @@ importers:
         specifier: ^2.1.0
         version: 2.1.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@crystallize/schema':
-        specifier: ^1.1.0
-        version: 1.1.0
+        specifier: ^1.1.1
+        version: 1.1.1
       '@glideapps/glide-data-grid':
         specifier: ^6.0.3
         version: 6.0.3(lodash@4.17.21)(marked@13.0.2)(react-dom@18.3.1(react@18.3.1))(react-responsive-carousel@3.2.23)(react@18.3.1)
@@ -340,8 +340,8 @@ packages:
       react: '*'
       react-dom: '*'
 
-  '@crystallize/schema@1.1.0':
-    resolution: {integrity: sha512-r3PzORpTK3PAcAO2AkP4jbFlhyv71CTSKqVP+SIq08WMxwPqIPMFx5KT6rskr7IdMiSVI4Go2eJoxTeqkq3Rdg==}
+  '@crystallize/schema@1.1.1':
+    resolution: {integrity: sha512-UdlisQ06nIkHMsQUFbbW8lGFJzv9ANVL+mU4RCMo71i0dCAyv+fU50QQE8K6A4kJMfF7me2VJSq5jOv3ujHw5w==}
 
   '@emotion/babel-plugin@11.11.0':
     resolution: {integrity: sha512-m4HEDZleaaCH+XgDDsPF15Ht6wTLsgDTeR3WYj9Q/k76JtWhrJjcP4+/XlG8LGT/Rol9qUfOIztXeA84ATpqPQ==}
@@ -5111,7 +5111,7 @@ snapshots:
   '@crystallize/import-export-sdk@1.0.3':
     dependencies:
       '@crystallize/js-api-client': 3.1.1
-      '@crystallize/schema': 1.1.0
+      '@crystallize/schema': 1.1.1
       zod: 3.23.8
 
   '@crystallize/js-api-client@3.1.1':
@@ -5128,7 +5128,7 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  '@crystallize/schema@1.1.0':
+  '@crystallize/schema@1.1.1':
     dependencies:
       zod: 3.23.8
 
