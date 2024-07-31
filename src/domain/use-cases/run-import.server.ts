@@ -65,10 +65,16 @@ export const runImport = async (importId: string, operations: Operation[], { emi
         },
         afterRequest: async (
             batch: MassCallClientBatch,
-            _: CrystallizePromise<unknown>,
+            promise: CrystallizePromise<unknown>,
             results: unknown,
         ): Promise<void> => {
-            emitter.emit(importId, { event: `success`, results, batch });
+            emitter.emit(importId, {
+                event: `success`,
+                results,
+                batch,
+                promise: promise.query,
+                variables: promise.variables,
+            });
         },
     });
     otherOperations.forEach((operation) => {
