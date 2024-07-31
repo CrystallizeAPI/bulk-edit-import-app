@@ -22,5 +22,10 @@ export const getItemsComponents = ({ actionData, loaderData }: GetItemsComponent
         selectedComponents?.includes(component.value),
     );
 
-    return { items, components };
+    const changes =
+        actionData && 'results' in actionData && 'changes' in actionData.results
+            ? actionData.results.changes
+            : undefined;
+
+    return { items, components, changes };
 };

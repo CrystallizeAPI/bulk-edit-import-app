@@ -16,7 +16,7 @@ export const convertTableToItemsForImport = async (rows: Row[], { api }: Deps) =
     const nodes = await api.fetchByIds(ids, components);
     const items = await mapComponentInput(nodes, { components }, { api });
     const findRow = (id: string) => rows.find((cells) => `${cells[0]}` === id);
-    const changes: Record<string, Record<string, boolean>> = {};
+    const changes: Record<string, string[]> = {};
     const newItems = items.map((item) => {
         const cells = findRow(item.id);
         if (!cells) {
@@ -35,10 +35,7 @@ export const convertTableToItemsForImport = async (rows: Row[], { api }: Deps) =
                     return component;
                 }
                 if (component.type === 'singleLine' && component.content.text !== cell.toString()) {
-                    changes[item.id] = {
-                        ...changes[item.id],
-                        [component.componentId]: true,
-                    };
+                    changes[item.id] = [...(changes[item.id] ?? []), component.componentId];
                     return {
                         ...component,
                         content: {
@@ -48,10 +45,7 @@ export const convertTableToItemsForImport = async (rows: Row[], { api }: Deps) =
                     };
                 }
                 if (component.type === 'richText' && component.content.plainText.join('\n') !== cell.toString()) {
-                    changes[item.id] = {
-                        ...changes[item.id],
-                        [component.componentId]: true,
-                    };
+                    changes[item.id] = [...(changes[item.id] ?? []), component.componentId];
                     return {
                         ...component,
                         content: {
@@ -61,10 +55,8 @@ export const convertTableToItemsForImport = async (rows: Row[], { api }: Deps) =
                     };
                 }
                 if (component.type === 'boolean' && component.content.value !== cell) {
-                    changes[item.id] = {
-                        ...changes[item.id],
-                        [component.componentId]: true,
-                    };
+                    changes[item.id] = [...(changes[item.id] ?? []), component.componentId];
+
                     return {
                         ...component,
                         content: {
@@ -74,10 +66,8 @@ export const convertTableToItemsForImport = async (rows: Row[], { api }: Deps) =
                     };
                 }
                 if (component.type === 'numeric' && component.content.number !== Number(cell)) {
-                    changes[item.id] = {
-                        ...changes[item.id],
-                        [component.componentId]: true,
-                    };
+                    changes[item.id] = [...(changes[item.id] ?? []), component.componentId];
+
                     return {
                         ...component,
                         content: {

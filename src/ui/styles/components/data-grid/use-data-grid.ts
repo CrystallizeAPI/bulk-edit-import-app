@@ -13,7 +13,7 @@ type UseDataGridProps = {
 };
 
 export const useDataGrid = ({ actionData, loaderData }: UseDataGridProps) => {
-    const { items, components } = getItemsComponents({ actionData, loaderData });
+    const { items, components, changes } = getItemsComponents({ actionData, loaderData });
     const itemsRef = useRef<ListItem[] | undefined>(undefined);
     const [changedColumns, setChangedColumns] = useState<Map<string, Set<number>>>(new Map());
     const [gridSelection, setGridSelection] = useState<GridSelection>();
@@ -21,8 +21,19 @@ export const useDataGrid = ({ actionData, loaderData }: UseDataGridProps) => {
 
     useEffect(() => {
         itemsRef.current = structuredClone(items);
-        setChangedColumns(new Map());
-    }, [items]);
+        const nextChangedColumns =
+            changes &&
+            (Object.keys(changes) as Array<keyof typeof changes>).map((itemId) => {
+                const changedColumns = changes?.[itemId].map((columnId) =>
+                    columns.findIndex((col) => col.id === columnId),
+                );
+
+                return [itemId, new Set(changedColumns)] as [string, Set<number>];
+            });
+
+        setChangedColumns(new Map(nextChangedColumns));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [items, changes]);
 
     const onCellEdited = useCallback(
         ([col, row]: Item, val: GridCell) => {
