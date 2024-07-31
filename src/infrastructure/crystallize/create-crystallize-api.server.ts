@@ -5,9 +5,6 @@ import { fetchShapes } from '~/infrastructure/crystallize/fetch-shapes.server';
 import { fetchTopics } from '~/infrastructure/crystallize/fetch-topics.server';
 import { createCatalogBrowser } from './create-catalog-browser.server';
 import { fetchDescendants } from './fetch-descendants.server';
-import { updateComponent } from './update-component.server';
-import { ComponentInput } from '@crystallize/schema';
-import { publishItem } from './publish-item.server';
 import { fetchByIds } from './fetch-by-ids.server';
 
 export const CrystallizeAPI = async (request: Request) => {
@@ -26,13 +23,6 @@ export const CrystallizeAPI = async (request: Request) => {
 
         fetchDescendants: async (folderIds: string[], language: string, components: string[]) =>
             fetchDescendants(folderIds, language, components, { browser: catalogueBrowser }),
-
-        updateComponent: async (itemId: string, language: string, input: ComponentInput) => {
-            return updateComponent(itemId, language, input, { apiClient });
-        },
-        publishItem: async (itemId: string, language: string, includeDescendants: boolean) => {
-            return publishItem(itemId, language, includeDescendants, { apiClient });
-        },
     };
 };
 

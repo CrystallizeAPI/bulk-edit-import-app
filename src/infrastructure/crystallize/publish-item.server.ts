@@ -1,7 +1,7 @@
-import { ClientInterface } from '@crystallize/js-api-client';
+import { MassClientInterface } from '@crystallize/js-api-client';
 
 type Deps = {
-    apiClient: ClientInterface;
+    apiClient: MassClientInterface['enqueue'];
 };
 
 export const publishItem = async (
@@ -10,22 +10,19 @@ export const publishItem = async (
     includeDescendants: boolean,
     { apiClient }: Deps,
 ): Promise<void> => {
-    await apiClient.nextPimApi(
+    apiClient.nextPimApi(
         `#graphql
-        mutation PUBLISH_ITEM($itemId:ID!, $language: String!, includeDescendants: Boolean!) {
+        mutation PUBLISH_ITEM($itemId:ID!, $language: String!, $includeDescendants: Boolean!) {
             publishItem(id:$itemId, language:$language, includeDescendants: $includeDescendants) {
-                ... on UpdatedComponent {
-                updatedComponentPath
-                    item {
-                        id
-                    }
+                ... on PublishInfo {
+                    id
+                    versionId
                 }
                 ... on BasicError {
                     message
                 }
             }
         } 
-
     `,
         {
             itemId,

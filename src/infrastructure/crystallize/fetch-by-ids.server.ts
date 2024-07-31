@@ -2,7 +2,7 @@ import { Component } from '~/domain/contracts/components';
 import { normalizeForGraphQL } from '~/domain/core/sanitize';
 import { InnerNode } from '~/domain/contracts/item-list';
 import { jsonToGraphQLQuery } from 'json-to-graphql-query';
-import { ClientInterface } from '@crystallize/js-api-client';
+import { ClientInterface, createMassCallClient } from '@crystallize/js-api-client';
 import { fragments } from './create-catalog-browser.server';
 
 type Deps = {
@@ -53,8 +53,6 @@ export const reducedNode = (node: Omit<InnerNode, 'components'> & Record<string,
     );
 };
 
-type JSONQuery = Parameters<typeof jsonToGraphQLQuery>[0];
-
 export const fetchByIds = async (
     ids: {
         id: string;
@@ -63,27 +61,36 @@ export const fetchByIds = async (
     componentIds: string[],
     { apiClient }: Deps,
 ) => {
-    const list = [];
-    const query = {
-        ...ids.reduce((memo: JSONQuery, id) => {
-            return {
-                ...memo,
-                [`item_${id.id}_${id.language}`]: {
-                    __aliasFor: 'item',
-                    __args: id,
-                    __on: {
-                        __typeName: 'Item',
-                        ...innerQuery(componentIds),
-                    },
+    const massClient = createMassCallClient(apiClient, {
+        initialSpawn: 4,
+        maxSpawn: 10,
+    });
+
+    const list: InnerNode[] = [];
+
+    ids.forEach((id) => {
+        const query = {
+            item: {
+                __args: id,
+                __on: {
+                    __typeName: 'Item',
+                    ...innerQuery(componentIds),
                 },
-            };
-        }, {}),
-    };
-    const gQuery = jsonToGraphQLQuery({ query });
-    const data = await apiClient.nextPimApi(gQuery + '\n' + fragments);
-    for (const id of ids) {
-        const node = data[`item_${id.id}_${id.language}`];
-        list.push(reducedNode(node));
-    }
+            },
+        };
+        const gQuery = jsonToGraphQLQuery({ query });
+        massClient.enqueue.nextPimApi(gQuery + '\n' + fragments);
+    });
+
+    do {
+        const results = massClient.hasFailed() ? await massClient.retry() : await massClient.execute();
+        Object.entries<{ item: Omit<InnerNode, 'components'> & Record<string, unknown> }>(results).forEach(
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            ([_, node]) => {
+                list.push(reducedNode(node.item));
+            },
+        );
+    } while (massClient.hasFailed());
+
     return list;
 };

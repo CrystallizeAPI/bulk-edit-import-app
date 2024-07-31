@@ -2,6 +2,9 @@ import { EventEmitter } from 'events';
 import { Operation, OperationsSchema } from '@crystallize/schema';
 import { exhash } from '../core/sanitize';
 import { CrystallizeAPI } from '~/infrastructure/crystallize/create-crystallize-api.server';
+import { createMassCallClient, CrystallizePromise, MassCallClientBatch } from '@crystallize/js-api-client';
+import { updateComponent } from '~/infrastructure/crystallize/update-component.server';
+import { publishItem } from '~/infrastructure/crystallize/publish-item.server';
 
 type Deps = {
     emitter: EventEmitter;
@@ -46,37 +49,53 @@ export const runImport = async (importId: string, operations: Operation[], { emi
         message: `Import ${importId} has started.`,
     });
 
-    await Promise.all(
-        otherOperations.map(async (operation) => {
-            if (operation.action !== 'updateComponent') {
-                emitter.emit(importId, { event: `error`, operation });
-                return;
-            }
-            try {
-                await api.updateComponent(operation.itemId, operation.language, operation.component);
-                emitter.emit(importId, { event: `${operation.concern}-${operation.action}`, operation });
-            } catch (error) {
-                console.error('Error updating component operation', operation, error);
-                emitter.emit(importId, { event: `error`, operation });
-            }
-        }),
-    );
+    const massClient = createMassCallClient(api.apiClient, {
+        initialSpawn: 10,
+        maxSpawn: 20,
+        onBatchDone: async (batch: MassCallClientBatch): Promise<void> => {
+            emitter.emit(importId, { event: `progression`, message: `Batch from ${batch.from} to ${batch.to} Done!` });
+        },
+        onFailure: async (batch: MassCallClientBatch, exception: unknown): Promise<boolean> => {
+            emitter.emit(importId, {
+                event: `error`,
+                exception,
+                message: `Exception in Batch from ${batch.from} to ${batch.to}.`,
+            });
+            return true;
+        },
+        afterRequest: async (
+            batch: MassCallClientBatch,
+            _: CrystallizePromise<unknown>,
+            results: unknown,
+        ): Promise<void> => {
+            emitter.emit(importId, { event: `success`, results, batch });
+        },
+    });
+    otherOperations.forEach((operation) => {
+        if (operation.action !== 'updateComponent') {
+            emitter.emit(importId, { event: `error`, operation });
+            return;
+        }
+        updateComponent(operation.itemId, operation.language, operation.component, { apiClient: massClient.enqueue });
+    });
+    do {
+        massClient.hasFailed() ? await massClient.retry() : await massClient.execute();
+    } while (massClient.hasFailed());
 
-    await Promise.all(
-        pubUnpubOperations.map(async (operation) => {
-            if (operation.action !== 'publish') {
-                emitter.emit(importId, { event: `error`, operation });
-                return;
-            }
-            try {
-                await api.publishItem(operation.itemId, operation.language, !!operation.includeDescendants);
-                emitter.emit(importId, { event: `${operation.concern}-${operation.action}`, operation });
-            } catch (error) {
-                console.error('Error publishing item operation', operation, error);
-                emitter.emit(importId, { event: `error`, operation });
-            }
-        }),
-    );
+    emitter.emit(importId, { event: `progression`, message: 'All components have been updated!' });
+    massClient.reset();
+    pubUnpubOperations.forEach((operation) => {
+        if (operation.action !== 'publish') {
+            emitter.emit(importId, { event: `error`, operation });
+            return;
+        }
+        publishItem(operation.itemId, operation.language, !!operation.includeDescendants, {
+            apiClient: massClient.enqueue,
+        });
+    });
+    do {
+        massClient.hasFailed() ? await massClient.retry() : await massClient.execute();
+    } while (massClient.hasFailed());
 
     emitter.emit(importId, {
         event: 'ended',

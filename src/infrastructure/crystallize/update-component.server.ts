@@ -1,8 +1,8 @@
-import { ClientInterface } from '@crystallize/js-api-client';
+import { MassClientInterface } from '@crystallize/js-api-client';
 import { ComponentInput } from '@crystallize/schema';
 
 type Deps = {
-    apiClient: ClientInterface;
+    apiClient: MassClientInterface['enqueue'];
 };
 
 export const updateComponent = async (
@@ -11,7 +11,7 @@ export const updateComponent = async (
     input: ComponentInput,
     { apiClient }: Deps,
 ): Promise<void> => {
-    await apiClient.nextPimApi(
+    apiClient.nextPimApi(
         `#graphql
         mutation UPDATE_COMPONENT($itemId:ID!, $language: String!, $input: ComponentInput!) {
             updateComponent(itemId:$itemId, language:$language, component: $input) {
