@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { GridColumn, Item, GridCell, GridCellKind } from '@glideapps/glide-data-grid';
 import { SelectOption } from '~/domain/contracts/select-option';
-import { Item as ListItem } from '~/domain/use-cases/fetch-items-and-components.server';
+import { Item as ListItem } from '~/domain/contracts/item-list';
 
 type UseColumnsProps = {
     components: SelectOption[];
@@ -54,7 +54,7 @@ export const useColumns = ({ items, components }: UseColumnsProps) => {
             }
 
             const componentId = columnId;
-            const component = item.components.find((c) => c.componentId === componentId);
+            const component = item.components.find((c: { componentId: string }) => c.componentId === componentId);
 
             if (!component) {
                 return {

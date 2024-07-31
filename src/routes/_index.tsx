@@ -11,6 +11,7 @@ import { GridToolbar } from '~/ui/styles/components/grid-toolbar/grid-toolbar';
 import { NotificationPanel } from '~/ui/styles/components/notification-panel';
 import { useImportStatus } from '~/ui/styles/hooks/use-import-status';
 import writeXlsxFile from 'write-excel-file';
+import { convertItemsToTableForExport } from '~/domain/use-cases/convert-items-to-table-for-export';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const api = await CrystallizeAPI(request);
@@ -60,60 +61,15 @@ export default function Index() {
                                 onSave={() => onSubmit(getChangedComponents(), 'saveItems')}
                                 onSavePublish={() => onSubmit(getChangedComponents(), 'savePublishItems')}
                                 onExport={async () => {
-                                    //@todo: @Plopix extract that code somewhere to keep that Index clear
                                     const headers: string[] = (
                                         actionData && actionData.values && 'components' in actionData.values
                                             ? actionData.values.components || []
                                             : []
                                     ) as string[];
-                                    const itemCells =
-                                        items?.map((item) => {
-                                            const cells = item.components.map((component) => {
-                                                let value = '';
-                                                const content = component.content;
-                                                if (component.type === 'singleLine' && 'text' in content) {
-                                                    value = content.text;
-                                                } else if (component.type === 'richText' && 'plainText' in content) {
-                                                    value = content.plainText.join('\n');
-                                                } else if (component.type === 'boolean' && 'value' in content) {
-                                                    value = content.value ? '1' : '0';
-                                                } else if (component.type === 'numeric' && 'number' in content) {
-                                                    value = content.number.toString();
-                                                }
-                                                return {
-                                                    type: String,
-                                                    value,
-                                                };
-                                            });
-                                            return [
-                                                {
-                                                    type: String,
-                                                    value: item.name,
-                                                },
-                                                ...cells,
-                                            ];
-                                        }) ?? [];
-
-                                    await writeXlsxFile(
-                                        [
-                                            [
-                                                {
-                                                    type: String,
-                                                    value: 'Name',
-                                                },
-                                                ...headers.map((head) => {
-                                                    return {
-                                                        type: String,
-                                                        value: head,
-                                                    };
-                                                }),
-                                            ],
-                                            ...itemCells,
-                                        ],
-                                        {
-                                            fileName: 'file.xlsx',
-                                        },
-                                    );
+                                    const table = convertItemsToTableForExport(headers, items || []);
+                                    await writeXlsxFile(table, {
+                                        fileName: `crystallize-export-${(Date.now() / 1000).toFixed(0)}.xlsx`,
+                                    });
                                 }}
                             />
                             <Filters

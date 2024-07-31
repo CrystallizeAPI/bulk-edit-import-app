@@ -1,7 +1,6 @@
 import { useCallback, useMemo, useState, useEffect, useRef } from 'react';
 import { Item, GridCell, TextCell, GridSelection, BooleanCell, NumberCell } from '@glideapps/glide-data-grid';
-import { Item as ListItem } from '~/domain/use-cases/fetch-items-and-components.server';
-
+import { Item as ListItem } from '~/domain/contracts/item-list';
 import { ActionData, LoaderData } from '../../types';
 
 import { theme } from './theme';
@@ -49,7 +48,9 @@ export const useDataGrid = ({ actionData, loaderData }: UseDataGridProps) => {
             }
 
             // Check if value is different than initial
-            const initialComponent = items?.[row].components.find((c) => c.componentId === componentId);
+            const initialComponent = items?.[row].components.find(
+                (c: { componentId: string }) => c.componentId === componentId,
+            );
 
             if (JSON.stringify(component) !== JSON.stringify(initialComponent)) {
                 setChangedColumns((prev) => new Map(prev.set(itemId, (prev.get(itemId) ?? new Set()).add(col))));

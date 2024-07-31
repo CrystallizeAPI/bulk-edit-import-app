@@ -7,7 +7,7 @@ import {
     PieceComponentConfig,
     Shape,
 } from '@crystallize/schema';
-import { InnerNode } from '~/infrastructure/crystallize/fetch-descendants.server';
+import { Item } from '../contracts/item-list';
 
 type Deps = {
     api: CrystallizeAPI;
@@ -119,10 +119,6 @@ const getEmptyFromShape = (
  * PIM Search does not have the filter capabilities to fetch items and components in a single request.
  * So we are going to fetch the children as a tree and then filter manually on topics and shapes...
  */
-
-export type Item = Omit<InnerNode, 'components'> & {
-    components: NonStructuaralComponent[];
-};
 
 export const fetchItemsAndComponents = async (input: FetchItemsInput, { api }: Deps): Promise<Item[]> => {
     const items = await api.fetchDescendants(input.folders, input.language, input.components);

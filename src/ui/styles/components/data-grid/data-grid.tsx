@@ -1,7 +1,7 @@
 import { DataEditor } from '@glideapps/glide-data-grid';
 import { useDataGrid } from './use-data-grid';
 import { ActionData, LoaderData } from '../../types';
-import { Item as ListItem } from '~/domain/use-cases/fetch-items-and-components.server';
+import { Item as ListItem } from '~/domain/contracts/item-list';
 
 import '@glideapps/glide-data-grid/dist/index.css';
 import '@crystallize/design-system/styles.css';

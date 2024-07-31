@@ -1,4 +1,4 @@
-import { Item as ListItem } from '~/domain/use-cases/fetch-items-and-components.server';
+import { Item as ListItem } from '~/domain/contracts/item-list';
 import { ActionData, LoaderData } from '../types';
 
 type GetItemsComponentsProps = {
