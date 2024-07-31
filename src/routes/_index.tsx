@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { ActionFunctionArgs, LoaderFunctionArgs, json } from '@remix-run/node';
 import { Form, useActionData, useLoaderData, useSubmit } from '@remix-run/react';
 import { retrieveFilterListForFrontend } from '~/domain/use-cases/retrieve-filter-list-for-frontend.server';
@@ -12,6 +11,7 @@ import { NotificationPanel } from '~/ui/styles/components/notification-panel';
 import { useImportStatus } from '~/ui/styles/hooks/use-import-status';
 import writeXlsxFile from 'write-excel-file';
 import { convertItemsToTableForExport } from '~/domain/use-cases/convert-items-to-table-for-export';
+import { useForm } from '~/ui/styles/hooks/use-form';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const api = await CrystallizeAPI(request);
@@ -28,25 +28,20 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 };
 
 export default function Index() {
+    const submit = useSubmit();
     const actionData = useActionData<typeof action>();
     const loaderData = useLoaderData<typeof loader>();
-    const [rerenderKey, setRerenderKey] = useState(0); // reset selected filters
-    const [shapeIdentifier, setShapeIdentifier] = useState<string | undefined>(undefined);
-
     const { hasEnded } = useImportStatus(actionData);
-    const submit = useSubmit();
+    const { renderKey, languageOption, shapeOption, onShapeOptionChange, onLanguageOptionChange } = useForm({
+        loaderData,
+        hasEnded,
+    });
 
     const onSubmit = (formData: FormData, action: 'saveItems' | 'savePublishItems') => {
         formData.append('_action', action);
+        languageOption?.value && formData.append('language', languageOption.value);
         submit(formData, { method: 'post', encType: 'multipart/form-data' });
     };
-
-    useEffect(() => {
-        if (hasEnded) {
-            setRerenderKey((prev) => prev + 1);
-            setShapeIdentifier(undefined);
-        }
-    }, [hasEnded]);
 
     return (
         <Form method="post" className="flex flex-col h-screen overflow-hidden bg-[#f5f5f6] px-8">
@@ -73,14 +68,16 @@ export default function Index() {
                                 }}
                             />
                             <Filters
-                                key={rerenderKey}
-                                shapeIdentifier={shapeIdentifier}
-                                onShapeChange={setShapeIdentifier}
+                                key={renderKey}
                                 actionData={actionData}
                                 loaderData={loaderData}
+                                shapeOption={shapeOption}
+                                onShapeOptionChange={onShapeOptionChange}
+                                languageOption={languageOption}
+                                onLanguageOptionChange={onLanguageOptionChange}
                             />
                             <NotificationPanel
-                                hasShape={!!shapeIdentifier}
+                                hasShape={!!shapeOption}
                                 actionData={actionData}
                                 loaderData={loaderData}
                             />

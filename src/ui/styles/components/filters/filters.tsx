@@ -2,15 +2,25 @@ import { Select } from '../select';
 import { Button } from '@crystallize/design-system';
 import { useNavigation } from '@remix-run/react';
 import { ActionData, LoaderData } from '../../types';
+import { SelectOption } from '~/domain/contracts/select-option';
 
 type FiltersFormProps = {
-    shapeIdentifier?: string;
-    onShapeChange: (shapeIdentifier?: string) => void;
     actionData: ActionData;
     loaderData: LoaderData;
+    shapeOption?: SelectOption;
+    onShapeOptionChange: (shapeOption?: SelectOption) => void;
+    languageOption?: SelectOption;
+    onLanguageOptionChange: (languageOption: SelectOption) => void;
 };
 
-export const Filters = ({ shapeIdentifier, onShapeChange, actionData, loaderData }: FiltersFormProps) => {
+export const Filters = ({
+    shapeOption,
+    onShapeOptionChange,
+    languageOption,
+    onLanguageOptionChange,
+    actionData,
+    loaderData,
+}: FiltersFormProps) => {
     const { filterList } = loaderData;
     const navigation = useNavigation();
     const errorFor = (field: string) => {
@@ -49,8 +59,9 @@ export const Filters = ({ shapeIdentifier, onShapeChange, actionData, loaderData
                 <Select
                     name="language"
                     options={filterList.languages}
-                    defaultValue={filterList.languages[0]}
+                    defaultValue={languageOption}
                     isMulti={false}
+                    onChange={(selected) => onLanguageOptionChange(selected as SelectOption)}
                 />
                 {errorFor('language')}
             </div>
@@ -60,7 +71,7 @@ export const Filters = ({ shapeIdentifier, onShapeChange, actionData, loaderData
                     name="shape"
                     isMulti={false}
                     options={filterList.shapes}
-                    onChange={(selected) => onShapeChange((selected as { value: string } | null)?.value)}
+                    onChange={(selected) => onShapeOptionChange(selected as SelectOption)}
                 />
                 {errorFor('shape')}
             </div>
@@ -77,8 +88,8 @@ export const Filters = ({ shapeIdentifier, onShapeChange, actionData, loaderData
                     className="grow"
                     name="components"
                     isMulti
-                    isDisabled={!shapeIdentifier}
-                    options={shapeIdentifier ? filterList.componentsMap[shapeIdentifier] : []}
+                    isDisabled={!shapeOption}
+                    options={shapeOption ? filterList.componentsMap[shapeOption.value] : []}
                 />
                 {errorFor('components')}
             </div>
