@@ -48,7 +48,7 @@ export const saveItems = async (
             });
         }
     }
-    runImport(importId, operations, { emitter, api });
+    runImport(importId, operations, { emitter, apiClient: api.apiClient });
     return {
         importId,
         operationCount: operations.length,

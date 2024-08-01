@@ -9,6 +9,7 @@ on:
 jobs:
     lint:
         name: 💄 Lint
+        if: github.repository == 'CrystallizeAPI/bulk-edit-import-app'
         runs-on: blacksmith-2vcpu-ubuntu-2204
         steps:
             - name: ⬇️ Checkout repo
@@ -22,7 +23,7 @@ jobs:
             - name: ⎔ Set up pnpm
               uses: pnpm/action-setup@v3
               with:
-                  version: 9.5.0
+                  version: 9.6.0
 
             - name: 📥 Download deps
               run: pnpm install
@@ -35,6 +36,7 @@ jobs:
 
     test:
         name: 🧪 Tests
+        if: github.repository == 'CrystallizeAPI/bulk-edit-import-app'
         runs-on: blacksmith-2vcpu-ubuntu-2204
         needs: [lint]
         steps:
@@ -49,7 +51,7 @@ jobs:
             - name: ⎔ Set up pnpm
               uses: pnpm/action-setup@v3
               with:
-                  version: 9.5.0
+                  version: 9.6.0
 
             - name: 📥 Download deps
               run: |
@@ -61,7 +63,7 @@ jobs:
 
     deploy:
         name: 🍿 Deploy
-        if: github.event_name == 'push' && ( github.ref_name == 'main' )
+        if: github.event_name == 'push' && ( github.ref_name == 'main' ) && ( github.repository == 'CrystallizeAPI/bulk-edit-import-app' )
         runs-on: blacksmith-2vcpu-ubuntu-2204
         needs: [lint, test]
         steps:

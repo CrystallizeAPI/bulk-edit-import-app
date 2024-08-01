@@ -1,17 +1,21 @@
 import { EventEmitter } from 'events';
 import { Operation, OperationsSchema } from '@crystallize/schema';
 import { exhash } from '../core/sanitize';
-import { CrystallizeAPI } from '~/infrastructure/crystallize/create-crystallize-api.server';
-import { createMassCallClient, CrystallizePromise, MassCallClientBatch } from '@crystallize/js-api-client';
+import {
+    ClientInterface,
+    createMassCallClient,
+    CrystallizePromise,
+    MassCallClientBatch,
+} from '@crystallize/js-api-client';
 import { updateComponent } from '~/infrastructure/crystallize/update-component.server';
 import { publishItem } from '~/infrastructure/crystallize/publish-item.server';
 
 type Deps = {
     emitter: EventEmitter;
-    api: CrystallizeAPI;
+    apiClient: ClientInterface;
 };
 
-export const runImport = async (importId: string, operations: Operation[], { emitter, api }: Deps) => {
+export const runImport = async (importId: string, operations: Operation[], { emitter, apiClient }: Deps) => {
     // wait 5 before to start diffusing the events
     await new Promise((resolve) => setTimeout(resolve, 5000));
 
@@ -49,7 +53,7 @@ export const runImport = async (importId: string, operations: Operation[], { emi
         message: `Import ${importId} has started.`,
     });
 
-    const massClient = createMassCallClient(api.apiClient, {
+    const massClient = createMassCallClient(apiClient, {
         initialSpawn: 10,
         maxSpawn: 20,
         onBatchDone: async (batch: MassCallClientBatch): Promise<void> => {
