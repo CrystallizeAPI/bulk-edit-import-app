@@ -2,7 +2,7 @@ FROM node:20-slim as base
 LABEL fly_launch_runtime="Remix"
 RUN mkdir /app
 WORKDIR /app
-ARG PNPM_VERSION=9.1.1
+ARG PNPM_VERSION=9.6.0
 RUN npm install -g pnpm@$PNPM_VERSION
 COPY . .
 RUN pnpm install --frozen-lockfile --prod=false

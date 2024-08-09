@@ -47,8 +47,8 @@ export const useColumns = ({ items, components }: UseColumnsProps) => {
             if (columnId === 'name') {
                 return {
                     kind: GridCellKind.Text,
-                    data: item.name,
-                    displayData: item.name,
+                    data: item.name || '',
+                    displayData: item.name || '',
                     allowOverlay: false,
                 };
             }
@@ -66,7 +66,7 @@ export const useColumns = ({ items, components }: UseColumnsProps) => {
             }
 
             if (component.type === 'singleLine') {
-                const data = 'text' in component.content ? component.content.text : '';
+                const data = 'text' in component.content ? component.content.text || '' : '';
                 return {
                     kind: GridCellKind.Text,
                     data,
@@ -86,7 +86,7 @@ export const useColumns = ({ items, components }: UseColumnsProps) => {
             }
 
             if (component.type === 'richText') {
-                const text = 'plainText' in component.content ? component.content.plainText : '';
+                const text = 'plainText' in component.content ? component.content.plainText || '' : '';
                 const data = (Array.isArray(text) ? text.join('\n') : text) ?? '';
                 return {
                     kind: GridCellKind.Text,
