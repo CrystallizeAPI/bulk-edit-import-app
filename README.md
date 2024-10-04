@@ -1,4 +1,4 @@
-# Plantasjen Bulk Edit Import App
+# Bulk Edit Import App
 
 > Import app that provides a UI for importing and mapping datasets to Crystallize.
 
